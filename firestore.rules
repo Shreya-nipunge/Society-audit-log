@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Anyone authenticated can read their own profile
+      allow read: if isOwner(userId) || isAdmin();
+      // Only admin or the user themselves can create/update
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isOwner(userId) || isAdmin();
+    }
+    
+    // Societies collection
+    match /societies/{societyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /wings/{wingId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+        
+        match /flats/{flatId} {
+          allow read: if isAuthenticated();
+          allow write: if isAdmin();
+        }
+      }
+    }
+    
+    // Charge Categories
+    match /chargeCategories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Bills
+    match /bills/{billId} {
+      // Members can read bills for their flat
+      allow read: if isAuthenticated() && (
+        resource.data.flatId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.flatId || 
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+    
+    // Payments
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.markedBy); // Only admin who marked it or if we store userId
+      allow write: if isAdmin();
+    }
+
+    // Receipts
+    match /receipts/{receiptId} {
+      // Members can read receipts for their flat
+      allow read: if isAuthenticated() && (
+        resource.data.flatId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.flatId || 
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+    
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin(); // Only admins write logs (via app logic)
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

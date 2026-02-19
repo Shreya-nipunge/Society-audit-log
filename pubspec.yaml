@@ -1,0 +1,53 @@
+name: society_audit_log
+description: "Society Audit Log - Digitized maintenance billing, payment tracking & audit records for Shivkrupasagar CHS Ltd."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+
+  # Firebase
+  firebase_core: any
+  firebase_auth: any
+  cloud_firestore: any
+  firebase_storage: any
+  google_sign_in: ^6.2.1 # Added for Google Auth
+
+  # State Management
+  provider: ^6.1.4
+
+  # PDF & Printing
+  pdf: ^3.11.2
+  printing: ^5.14.2
+
+  # Utils
+  intl: any
+  uuid: ^4.5.1
+  share_plus: any
+  path_provider: any
+  url_launcher: any
+
+  # Local Storage
+  shared_preferences: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/

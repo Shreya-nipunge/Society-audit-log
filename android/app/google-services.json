@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "459939793437",
+    "project_id": "society-audit-log",
+    "storage_bucket": "society-audit-log.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459939793437:android:75b88808257f83d0b414f4",
+        "android_client_info": {
+          "package_name": "com.society.auditlog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "459939793437-ino0k3apk18lbo9jqbl1h2vgoomc3qrb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7AZwM4PYRi52jzmlLMTIyjqrMDAyt3Vs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "459939793437-ino0k3apk18lbo9jqbl1h2vgoomc3qrb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
