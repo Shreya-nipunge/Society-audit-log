@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/mock_data.dart';
-import '../../../core/utils/app_mode.dart';
+
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../models/demand_notice_model.dart';
@@ -123,8 +123,8 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Maintenance Demand Notice'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -226,12 +226,10 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
 
               const SizedBox(height: 48),
               CustomButton(
-                text: AppConfig.isReadOnly
-                    ? 'Read-Only Mode Active'
-                    : 'Generate Bills for All Members',
+                text: 'Generate Bills for All Members',
                 isLoading: _isLoading,
                 icon: Icons.auto_awesome_outlined,
-                onPressed: AppConfig.isReadOnly ? null : _handleGenerate,
+                onPressed: _handleGenerate,
               ),
               const SizedBox(height: 16),
               if (kIsWeb) ...[

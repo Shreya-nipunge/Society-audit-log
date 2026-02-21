@@ -16,9 +16,21 @@ class ReportService {
 
       return {
         'name': member.name,
-        'flat': 'A-101', // Mock flat mapping
+        'flat': member.flatNumber,
         'paid': totalPaid,
         'pending': outstanding,
+      };
+    }).toList();
+  }
+
+  static List<Map<String, dynamic>> getExpenseSummary() {
+    return MockData.expenses.map((e) {
+      return {
+        'date': e.date.toString().split(' ')[0],
+        'category': e.displayCategory,
+        'amount': e.amount,
+        'vendor': e.vendorName,
+        'status': e.approvedBy != null ? 'Approved' : 'Pending',
       };
     }).toList();
   }

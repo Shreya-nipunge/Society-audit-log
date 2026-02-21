@@ -188,8 +188,8 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Record Payment'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(

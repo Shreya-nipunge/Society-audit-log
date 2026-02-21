@@ -54,8 +54,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (user.role == UserRole.member) {
           Navigator.pushReplacementNamed(context, '/member-dashboard');
+        } else if (user.role == UserRole.chairman) {
+          Navigator.pushReplacementNamed(context, '/chairman-dashboard');
+        } else if (user.role == UserRole.treasurer) {
+          Navigator.pushReplacementNamed(context, '/treasurer-dashboard');
         } else {
-          // All admins go to Admin Dashboard, but with different internal views (handled later)
+          // Secretary goes to admin-dashboard (operations hub)
           Navigator.pushReplacementNamed(context, '/admin-dashboard');
         }
       } else {
@@ -163,13 +167,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 48),
 
-              const Center(
-                child: Text(
-                  "Contact Admin for account access",
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
+              Center(
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                      color: AppColors.textHint,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Private Society System',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Login with society-issued credentials only.\nContact your society admin for access.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.textHint, fontSize: 12),
+                    ),
+                  ],
                 ),
               ),
 

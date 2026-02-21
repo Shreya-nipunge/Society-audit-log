@@ -32,9 +32,9 @@ class AdminDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
-            'Dashboard',
+            _dashboardLabel(),
             Icons.dashboard_outlined,
-            '/admin-dashboard',
+            _dashboardRoute(),
           ),
           _buildDrawerItem(
             context,
@@ -54,11 +54,18 @@ class AdminDrawer extends StatelessWidget {
             Icons.analytics_outlined,
             '/reports',
           ),
+          if (!PermissionManager.isTreasurer())
+            _buildDrawerItem(
+              context,
+              'Treasury',
+              Icons.account_balance_outlined,
+              '/treasurer-dashboard',
+            ),
           _buildDrawerItem(
             context,
-            'Treasurer Summary',
-            Icons.account_balance_outlined,
-            '/treasurer-dashboard',
+            'Expenses',
+            Icons.receipt_long_outlined,
+            '/record-expense',
           ),
           _buildDrawerItem(
             context,
@@ -73,6 +80,7 @@ class AdminDrawer extends StatelessWidget {
               Icons.security_outlined,
               '/audit-logs',
             ),
+
           const Spacer(),
           const Divider(),
           ListTile(
@@ -121,9 +129,21 @@ class AdminDrawer extends StatelessWidget {
       onTap: () {
         Navigator.pop(context); // Close drawer
         if (!isSelected) {
-          Navigator.pushReplacementNamed(context, route);
+          Navigator.pushNamed(context, route);
         }
       },
     );
+  }
+
+  String _dashboardLabel() {
+    if (PermissionManager.isChairman()) return 'Chairman Console';
+    if (PermissionManager.isTreasurer()) return 'Treasurer Console';
+    return 'Secretary Console';
+  }
+
+  String _dashboardRoute() {
+    if (PermissionManager.isChairman()) return '/chairman-dashboard';
+    if (PermissionManager.isTreasurer()) return '/treasurer-dashboard';
+    return '/admin-dashboard';
   }
 }

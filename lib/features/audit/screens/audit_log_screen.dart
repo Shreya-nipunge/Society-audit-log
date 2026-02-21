@@ -14,7 +14,15 @@ class AuditLogScreen extends StatefulWidget {
 
 class _AuditLogScreenState extends State<AuditLogScreen> {
   String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Members', 'Payments', 'Reports'];
+  final List<String> _categories = [
+    'All',
+    'Members',
+    'Accounts',
+    'Payments',
+    'Expenses',
+    'Documents',
+    'Reports',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -179,16 +187,57 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
   }
 
   Color _getLogColor(String action) {
-    if (action.contains('ADD')) return Colors.green;
-    if (action.contains('DELETE')) return Colors.red;
-    if (action.contains('RECORD')) return AppColors.primary;
-    return Colors.blue;
+    if (action.contains('ADD') || action.contains('CREATE')) {
+      return Colors.green;
+    }
+    if (action.contains('DELETE') || action.contains('DEACTIVATE')) {
+      return Colors.orange;
+    }
+    if (action.contains('REACTIVATE')) {
+      return const Color(0xFF2E7D32);
+    }
+    if (action.contains('EDIT')) {
+      return Colors.blue;
+    }
+    if (action.contains('RECORD') || action.contains('EXPENSE')) {
+      return AppColors.primary;
+    }
+    if (action.contains('PAYMENT') || action.contains('BILL')) {
+      return const Color(0xFF6366F1);
+    }
+    if (action.contains('IMPORT')) {
+      return const Color(0xFF0EA5E9);
+    }
+    return Colors.blueGrey;
   }
 
   IconData _getLogIcon(String action) {
-    if (action.contains('MEMBER')) return Icons.person_outline;
-    if (action.contains('PAYMENT')) return Icons.receipt_long_outlined;
-    if (action.contains('REPORT')) return Icons.analytics_outlined;
+    if (action.contains('MEMBER') ||
+        action.contains('USER') ||
+        action.contains('ACCOUNT')) {
+      return Icons.person_outline;
+    }
+    if (action.contains('PAYMENT') || action.contains('BILL')) {
+      return Icons.receipt_long_outlined;
+    }
+    if (action.contains('EXPENSE')) {
+      return Icons.account_balance_wallet_outlined;
+    }
+    if (action.contains('REPORT')) {
+      return Icons.analytics_outlined;
+    }
+    if (action.contains('IMPORT')) {
+      return Icons.upload_file_outlined;
+    }
+    if (action.contains('DOCUMENT')) {
+      return Icons.description_outlined;
+    }
+    if (action.contains('DEACTIVATE')) {
+      return Icons.block_outlined;
+    }
+    if (action.contains('REACTIVATE')) {
+      return Icons.check_circle_outline;
+    }
     return Icons.settings_outlined;
   }
 }

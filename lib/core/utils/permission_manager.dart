@@ -10,7 +10,9 @@ class PermissionManager {
   static bool isMember() => _role == UserRole.member;
 
   // Permission Checks
-  static bool canEditMembers() => isChairman() || isSecretary();
+  static bool canEditMembers() =>
+      isChairman() || isSecretary() || isTreasurer();
+  static bool canAssignRoles() => isChairman();
 
   static bool canRecordPayments() => isChairman() || isTreasurer();
 

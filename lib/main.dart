@@ -13,13 +13,19 @@ import 'features/admin/screens/bulk_import_screen.dart';
 import 'features/payments/screens/allocation_editor.dart';
 import 'features/admin/screens/system_health_screen.dart';
 import 'features/audit/screens/document_upload_screen.dart';
+import 'features/audit/screens/record_expense_screen.dart';
 import 'features/reports/screens/reports_screen.dart';
 import 'features/admin/screens/admin_dashboard.dart';
+import 'features/admin/screens/chairman_dashboard.dart';
 import 'features/admin/screens/add_member_screen.dart';
 import 'features/admin/screens/member_list_screen.dart';
 import 'features/admin/screens/treasurer_dashboard.dart';
 import 'features/audit/screens/audit_log_screen.dart';
 import 'features/audit/screens/document_list_screen.dart';
+import 'features/payments/screens/record_payment_screen.dart';
+import 'features/notices/screens/notice_detail_screen.dart';
+import 'features/notices/screens/notice_list_screen.dart';
+import 'features/notices/screens/create_notice_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
@@ -108,15 +114,19 @@ class SocietyAuditLogApp extends StatelessWidget {
             child: ReportsScreen(),
           ),
           '/admin-dashboard': (context) => const RoleGuard(
+            allowedRoles: [UserRole.secretary],
+            child: AdminDashboard(),
+          ),
+          '/chairman-dashboard': (context) => const RoleGuard(
+            allowedRoles: [UserRole.chairman],
+            child: ChairmanDashboard(),
+          ),
+          '/add-member': (context) => const RoleGuard(
             allowedRoles: [
               UserRole.chairman,
               UserRole.secretary,
               UserRole.treasurer,
             ],
-            child: AdminDashboard(),
-          ),
-          '/add-member': (context) => const RoleGuard(
-            allowedRoles: [UserRole.chairman, UserRole.secretary],
             child: AddMemberScreen(),
           ),
           '/member-list': (context) => const RoleGuard(
@@ -136,8 +146,20 @@ class SocietyAuditLogApp extends StatelessWidget {
             child: TreasurerDashboard(),
           ),
           '/audit-logs': (context) => const RoleGuard(
-            allowedRoles: [UserRole.chairman, UserRole.secretary],
+            allowedRoles: [
+              UserRole.chairman,
+              UserRole.secretary,
+              UserRole.treasurer,
+            ],
             child: AuditLogScreen(),
+          ),
+          '/record-payment': (context) => const RoleGuard(
+            allowedRoles: [
+              UserRole.chairman,
+              UserRole.secretary,
+              UserRole.treasurer,
+            ],
+            child: RecordPaymentScreen(),
           ),
           '/document-list': (context) => const RoleGuard(
             allowedRoles: [
@@ -159,6 +181,32 @@ class SocietyAuditLogApp extends StatelessWidget {
           '/system-health': (context) => const RoleGuard(
             allowedRoles: [UserRole.chairman, UserRole.secretary],
             child: SystemHealthScreen(),
+          ),
+          '/record-expense': (context) => const RoleGuard(
+            allowedRoles: [
+              UserRole.chairman,
+              UserRole.secretary,
+              UserRole.treasurer,
+            ],
+            child: RecordExpenseScreen(),
+          ),
+          '/notice-detail': (context) {
+            final args =
+                ModalRoute.of(context)!.settings.arguments
+                    as Map<String, String>;
+            return NoticeDetailScreen(notice: args);
+          },
+          '/notice-list': (context) => const RoleGuard(
+            allowedRoles: [
+              UserRole.chairman,
+              UserRole.secretary,
+              UserRole.treasurer,
+            ],
+            child: NoticeListScreen(),
+          ),
+          '/create-notice': (context) => const RoleGuard(
+            allowedRoles: [UserRole.chairman, UserRole.secretary],
+            child: CreateNoticeScreen(),
           ),
         },
       ),

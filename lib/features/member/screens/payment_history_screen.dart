@@ -49,8 +49,8 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Payment History'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: _isLoading

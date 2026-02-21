@@ -36,11 +36,14 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
         final parts = line.split(',');
         if (parts.length < 3) continue;
 
+        final flatNo = parts.length > 3 ? parts[3].trim() : '';
         final user = UserModel(
           id: 'mem_${DateTime.now().millisecondsSinceEpoch}_$count',
           name: parts[0].trim(),
           email: parts[1].trim(),
+          password: 'Society@123',
           mobile: parts[2].trim(),
+          flatNumber: flatNo,
           role: UserRole.member,
           societyId: 'society_123',
         );

@@ -26,9 +26,10 @@ dependencies:
   # State Management
   provider: ^6.1.4
 
-  # PDF & Printing
+  # PDF, Printing & Excel
   pdf: ^3.11.2
   printing: ^5.14.2
+  excel: ^4.0.0
 
   # Utils
   intl: any
@@ -39,6 +40,7 @@ dependencies:
 
   # Local Storage
   shared_preferences: any
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:
