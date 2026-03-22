@@ -219,6 +219,7 @@ class ReportExportService {
     final tempDir = await getTemporaryDirectory();
     final file = await File('${tempDir.path}/$fileName').create();
     await file.writeAsBytes(bytes);
+    // ignore: deprecated_member_use
     await Share.shareXFiles([
       XFile(file.path),
     ], subject: 'Society Report: $fileName');
