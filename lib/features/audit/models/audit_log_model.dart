@@ -23,21 +23,24 @@ class AuditLogModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'action': actionType,
+      'timestamp': timestamp.toIso8601String(),
+      'performedBy': performedBy,
+      'details': 'Action on $targetEntity. ${oldValue != null ? "Changed from $oldValue to $newValue" : ""}',
+      // Local App properties
       'id': id,
       'actionType': actionType,
-      'performedBy': performedBy,
       'role': role.name,
       'targetEntity': targetEntity,
       'oldValue': oldValue,
       'newValue': newValue,
-      'timestamp': timestamp.toIso8601String(),
     };
   }
 
-  factory AuditLogModel.fromMap(Map<String, dynamic> map) {
+  factory AuditLogModel.fromMap(Map<String, dynamic> map, String docId) {
     return AuditLogModel(
-      id: map['id'] ?? '',
-      actionType: map['actionType'] ?? '',
+      id: docId,
+      actionType: map['action'] ?? map['actionType'] ?? '',
       performedBy: map['performedBy'] ?? '',
       role: UserRole.values.firstWhere(
         (e) => e.name == map['role'],
@@ -46,7 +49,7 @@ class AuditLogModel {
       targetEntity: map['targetEntity'] ?? '',
       oldValue: map['oldValue'],
       newValue: map['newValue'],
-      timestamp: DateTime.parse(map['timestamp']),
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : DateTime.now(),
     );
   }
 }

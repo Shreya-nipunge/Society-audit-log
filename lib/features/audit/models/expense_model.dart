@@ -329,23 +329,26 @@ class ExpenseModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'date': date.toIso8601String(),
+      'expenseType': displayCategory,
+      'amount': totalAmount,
+      'description': description,
+      'paymentMethod': paymentMode.label,
+      'transactionId': referenceNumber,
+      // Local / Legacy UI fields
       'id': id,
       'category': category.name,
       'customCategory': customCategory,
       'subCategory': subCategory,
-      'description': description,
       'location': location,
       'vendorName': vendorName,
       'vendorContact': vendorContact,
       'invoiceNumber': invoiceNumber,
       'workOrderRef': workOrderRef,
-      'paymentMode': paymentMode.name,
+      'internalPaymentMode': paymentMode.name,
       'bankAccountUsed': bankAccountUsed,
       'approvalAuthority': approvalAuthority?.name,
-      'date': date.toIso8601String(),
       'dateOfPayment': dateOfPayment?.toIso8601String(),
-      'referenceNumber': referenceNumber,
-      'amount': amount,
       'taxAmount': taxAmount,
       'fundAllocation': fundAllocation?.name,
       'customFund': customFund,
@@ -359,5 +362,51 @@ class ExpenseModel {
       'timestamp': timestamp.toIso8601String(),
       'auditTrailId': auditTrailId,
     };
+  }
+
+  factory ExpenseModel.fromMap(Map<String, dynamic> map, String docId) {
+    return ExpenseModel(
+      id: docId,
+      category: ExpenseCategory.values.firstWhere(
+        (e) => e.name == map['category'] || e.label == map['expenseType'],
+        orElse: () => ExpenseCategory.other,
+      ),
+      customCategory: map['customCategory'],
+      subCategory: map['subCategory'],
+      description: map['description'] ?? '',
+      location: map['location'],
+      vendorName: map['vendorName'],
+      vendorContact: map['vendorContact'],
+      invoiceNumber: map['invoiceNumber'],
+      workOrderRef: map['workOrderRef'],
+      paymentMode: ExpensePaymentMode.values.firstWhere(
+        (e) => e.label == map['paymentMethod'] || e.name == map['internalPaymentMode'],
+        orElse: () => ExpensePaymentMode.cash,
+      ),
+      bankAccountUsed: map['bankAccountUsed'],
+      approvalAuthority: ApprovalAuthority.values.firstWhere(
+        (e) => e.name == map['approvalAuthority'],
+        orElse: () => ApprovalAuthority.secretary,
+      ),
+      date: map['date'] != null ? DateTime.parse(map['date']) : DateTime.now(),
+      dateOfPayment: map['dateOfPayment'] != null ? DateTime.parse(map['dateOfPayment']) : null,
+      referenceNumber: map['transactionId'] ?? map['referenceNumber'],
+      amount: (map['amount'] ?? 0.0).toDouble() - (map['taxAmount'] ?? 0.0).toDouble(), // Reverse engineering the totalAmount 
+      taxAmount: map['taxAmount']?.toDouble(),
+      fundAllocation: FundType.values.firstWhere(
+        (e) => e.name == map['fundAllocation'],
+        orElse: () => FundType.maintenance,
+      ),
+      customFund: map['customFund'],
+      proofImagePath: map['proofImagePath'],
+      paymentProofPath: map['paymentProofPath'],
+      workCompletionProofPath: map['workCompletionProofPath'],
+      vendorQuotationPath: map['vendorQuotationPath'],
+      recordedBy: map['recordedBy'] ?? 'System',
+      verifiedBy: map['verifiedBy'],
+      approvedBy: map['approvedBy'],
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : DateTime.now(),
+      auditTrailId: map['auditTrailId'],
+    );
   }
 }

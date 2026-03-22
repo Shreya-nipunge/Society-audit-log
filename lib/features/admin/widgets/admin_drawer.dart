@@ -80,6 +80,12 @@ class AdminDrawer extends StatelessWidget {
               Icons.security_outlined,
               '/audit-logs',
             ),
+          _buildDrawerItem(
+            context,
+            'Complaints',
+            Icons.report_problem_outlined,
+            '/admin-complaints',
+          ),
 
           const Spacer(),
           const Divider(),

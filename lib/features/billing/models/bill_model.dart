@@ -1,50 +1,92 @@
 class BillModel {
   final String id;
   final String memberId;
-  final String month; // e.g., "October 2026"
+  final String flatNumber; // New for ERD
+  final int month; // New for ERD (Number instead of string)
+  final int year; // New for ERD
   final double maintenanceAmount;
-  final double waterCharges;
-  final double otherCharges;
-  final double total;
+  final double otherCharges; // Combines local ones for ERD
+  final double totalAmount; // 'totalAmount' for ERD (was 'total')
+  final double paidAmount; // New for ERD
+  final String status; // New for ERD
   final DateTime generatedAt;
+  final DateTime dueDate; // New for ERD
+
+  // Keep these locals for the frontend mock if needed
+  final double waterCharges;
+  final String monthString;
   final bool isPaid;
 
   BillModel({
     required this.id,
     required this.memberId,
-    required this.month,
+    this.flatNumber = '',
+    this.month = 1,
+    this.year = 2026,
     required this.maintenanceAmount,
-    required this.waterCharges,
+    this.waterCharges = 0,
     required this.otherCharges,
-    required this.total,
+    required this.totalAmount,
+    this.paidAmount = 0,
+    this.status = 'pending',
     required this.generatedAt,
+    DateTime? dueDate,
+    this.monthString = '',
     this.isPaid = false,
-  });
+  }) : dueDate = dueDate ?? DateTime.now().add(const Duration(days: 15));
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'memberId': memberId,
+      'flatNumber': flatNumber,
       'month': month,
+      'year': year,
       'maintenanceAmount': maintenanceAmount,
-      'waterCharges': waterCharges,
       'otherCharges': otherCharges,
-      'total': total,
+      'totalAmount': totalAmount,
+      'paidAmount': paidAmount,
+      'status': status,
       'generatedAt': generatedAt.toIso8601String(),
-      'isPaid': isPaid,
+      'dueDate': dueDate.toIso8601String(),
     };
   }
 
-  BillModel copyWith({bool? isPaid}) {
+  factory BillModel.fromMap(Map<String, dynamic> map) {
+    return BillModel(
+      id: map['id'] ?? '',
+      memberId: map['memberId'] ?? '',
+      flatNumber: map['flatNumber'] ?? '',
+      month: map['month'] ?? 1,
+      year: map['year'] ?? 2026,
+      maintenanceAmount: (map['maintenanceAmount'] ?? 0).toDouble(),
+      waterCharges: 0, 
+      otherCharges: (map['otherCharges'] ?? 0).toDouble(),
+      totalAmount: (map['totalAmount'] ?? map['total'] ?? 0).toDouble(),
+      paidAmount: (map['paidAmount'] ?? 0).toDouble(),
+      status: map['status'] ?? 'pending',
+      generatedAt: map['generatedAt'] != null ? DateTime.parse(map['generatedAt']) : DateTime.now(),
+      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : DateTime.now().add(const Duration(days: 15)),
+      isPaid: map['status'] == 'paid',
+    );
+  }
+
+  BillModel copyWith({bool? isPaid, String? status}) {
     return BillModel(
       id: id,
       memberId: memberId,
+      flatNumber: flatNumber,
       month: month,
+      year: year,
       maintenanceAmount: maintenanceAmount,
       waterCharges: waterCharges,
       otherCharges: otherCharges,
-      total: total,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      status: status ?? this.status,
       generatedAt: generatedAt,
+      dueDate: dueDate,
+      monthString: monthString,
       isPaid: isPaid ?? this.isPaid,
     );
   }

@@ -155,15 +155,15 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
       final currentUser = SessionManager.currentUser;
 
       final newUser = UserModel(
-        id: 'mem_${DateTime.now().millisecondsSinceEpoch}',
+        uid: 'mem_${DateTime.now().millisecondsSinceEpoch}',
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-        mobile: _mobileController.text.trim(),
+        phone: _mobileController.text.trim(),
         flatNumber: _flatController.text.trim(),
         role: _selectedRole,
         societyId: 'society_123',
-        createdBy: currentUser?.id ?? 'unknown',
+        createdBy: currentUser?.uid ?? 'unknown',
       );
 
       MockData.addUser(newUser);

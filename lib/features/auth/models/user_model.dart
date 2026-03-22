@@ -19,62 +19,59 @@ enum UserRole {
 }
 
 class UserModel {
-  final String id;
-  final String name;
+  final String uid; // ERD: uid
+  final String name; 
   final String email;
-  final String password;
-  final String mobile;
+  final String phone; // ERD: phone (was mobile)
+  final String password; // Kept local assuming auth layer uses it
   final String flatNumber;
   final UserRole role;
-  final String societyId;
-  final bool isActive;
-  final String createdBy;
+  final String societyId; // Kept local
+  final String status; // ERD: status (was isActive boolean)
+  final String createdBy; // Kept local
   final DateTime createdAt;
 
   UserModel({
-    required this.id,
+    required this.uid,
     required this.name,
     required this.email,
+    required this.phone,
     required this.password,
-    required this.mobile,
     this.flatNumber = '',
     required this.role,
     required this.societyId,
-    this.isActive = true,
+    this.status = 'active',
     this.createdBy = 'System',
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'uid': uid,
       'name': name,
       'email': email,
-      'password': password,
-      'mobile': mobile,
+      'phone': phone,
       'flatNumber': flatNumber,
       'role': role.name,
-      'societyId': societyId,
-      'isActive': isActive,
-      'createdBy': createdBy,
+      'status': status,
       'createdAt': createdAt.toIso8601String(),
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'] ?? '',
+      uid: map['uid'] ?? map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
-      password: map['password'] ?? '',
-      mobile: map['mobile'] ?? '',
+      phone: map['phone'] ?? map['mobile'] ?? '',
+      password: map['password'] ?? '', // Default to empty string if missing as it might not be in the map
       flatNumber: map['flatNumber'] ?? '',
       role: UserRole.values.firstWhere(
         (e) => e.name == map['role'],
         orElse: () => UserRole.member,
       ),
       societyId: map['societyId'] ?? '',
-      isActive: map['isActive'] ?? true,
+      status: map['status'] ?? (map['isActive'] == true ? 'active' : 'inactive'),
       createdBy: map['createdBy'] ?? 'System',
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
@@ -82,27 +79,32 @@ class UserModel {
     );
   }
 
+  // Backwards compatibility getter for existing mocks where `id` was used
+  String get id => uid;
+  bool get isActive => status == 'active';
+
   UserModel copyWith({
+    String? uid,
     String? name,
     String? email,
+    String? phone,
     String? password,
-    String? mobile,
     String? flatNumber,
     UserRole? role,
     String? societyId,
-    bool? isActive,
+    String? status,
     String? createdBy,
   }) {
     return UserModel(
-      id: id,
+      uid: uid ?? this.uid,
       name: name ?? this.name,
       email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
-      mobile: mobile ?? this.mobile,
       flatNumber: flatNumber ?? this.flatNumber,
       role: role ?? this.role,
       societyId: societyId ?? this.societyId,
-      isActive: isActive ?? this.isActive,
+      status: status ?? this.status,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt,
     );

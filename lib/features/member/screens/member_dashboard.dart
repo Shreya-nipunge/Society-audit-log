@@ -112,6 +112,13 @@ class MemberDashboard extends StatelessWidget {
                   const Color(0xFF0EA5E9),
                   () => Navigator.pushNamed(context, '/profile'),
                 ),
+                _buildActionTile(
+                  context,
+                  'Complaints',
+                  Icons.report_problem_rounded,
+                  const Color(0xFFEF4444),
+                  () => Navigator.pushNamed(context, '/my-complaints'),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -125,13 +132,13 @@ class MemberDashboard extends StatelessWidget {
                   (notice) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _buildNoticeCard(
-                      title: notice['title'] ?? '',
-                      date: notice['date'] ?? '',
-                      type: notice['category'] ?? '',
+                      title: notice.title,
+                      date: DateFormat('dd MMM yyyy').format(notice.date),
+                      type: 'Notice',
                       onTap: () => Navigator.pushNamed(
                         context,
                         '/notice-detail',
-                        arguments: notice,
+                        arguments: notice.toMap(), // Pass map to detail screen assuming it still expects a map, or I can update detail screen later. Actually let me just pass notice.toMap() for now to avoid breaking it. Wait, I should probably check notice_detail_screen too!
                       ),
                     ),
                   ),

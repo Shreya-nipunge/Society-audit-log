@@ -97,15 +97,17 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
 
       final transaction = TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        memberId: _selectedMember!.id,
-        memberName: _selectedMember!.name,
-        flatNo:
-            'N/A', // We could fetch this from UserModel if we added it, using 'N/A' for now
+        memberId: _selectedMember!.uid,
+        date: DateTime.now(),
+        transactionType: 'Maintenance',
         amount: totalAmount,
-        paymentMode: _paymentMode,
-        referenceNo: _referenceController.text.isNotEmpty
+        status: 'Success',
+        referenceId: _referenceController.text.isNotEmpty
             ? _referenceController.text
             : null,
+        paymentMethod: _paymentMode,
+        memberName: _selectedMember!.name,
+        flatNo: _selectedMember!.flatNumber,
         allocation: FundAllocation(
           maintenance: double.parse(_maintenanceController.text),
           sinkingFund: double.parse(_sinkingController.text),
@@ -114,7 +116,7 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
           other: double.parse(_otherController.text),
         ),
         receiptNo: receiptNo,
-        recordedBy: admin.id,
+        recordedBy: admin.uid,
         recordedAt: DateTime.now(),
       );
 

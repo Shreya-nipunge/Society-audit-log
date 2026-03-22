@@ -10,7 +10,7 @@ class ReceiptService {
     TransactionModel transaction,
   ) async {
     final pdf = pw.Document();
-    final dateStr = DateFormat('dd-MMM-yyyy').format(transaction.recordedAt);
+    final dateStr = DateFormat('dd-MMM-yyyy').format(transaction.date);
 
     pdf.addPage(
       pw.Page(
@@ -157,9 +157,9 @@ class ReceiptService {
                 pw.SizedBox(height: 16),
 
                 // Payment Info
-                pw.Text('Payment Mode: ${transaction.paymentMode}'),
-                if (transaction.referenceNo != null)
-                  pw.Text('Ref No: ${transaction.referenceNo}'),
+                pw.Text('Payment Mode: ${transaction.paymentMethod}'),
+                if (transaction.referenceId != null)
+                  pw.Text('Ref No: ${transaction.referenceId}'),
 
                 pw.Spacer(),
 

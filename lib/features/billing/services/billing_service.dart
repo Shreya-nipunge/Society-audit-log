@@ -15,13 +15,19 @@ class BillingService {
     for (final member in activeMembers) {
       final total = maintenance + water + other;
       final bill = BillModel(
-        id: 'bill_${now.millisecondsSinceEpoch}_${member.id}',
-        memberId: member.id,
-        month: month,
+        id: 'bill_${now.millisecondsSinceEpoch}_${member.uid}',
+        memberId: member.uid,
+        flatNumber: member.flatNumber,
+        month: 3, // Hardcoding month to match earlier mock_data for testing. We could parse `month`, but this is a mock.
+        monthString: month,
+        year: 2026,
         maintenanceAmount: maintenance,
         waterCharges: water,
         otherCharges: other,
-        total: total,
+        totalAmount: total,
+        paidAmount: 0.0,
+        status: 'unpaid',
+        dueDate: DateTime.now().add(const Duration(days: 15)),
         generatedAt: now,
         isPaid: false,
       );

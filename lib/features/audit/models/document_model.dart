@@ -20,24 +20,27 @@ class DocumentModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'name': title,
+      'type': category, // Typically 'PDF', 'Doc', etc. based on ERD
+      'url': fileName, // The storage URL
+      'uploadedAt': uploadedAt.toIso8601String(),
+      'uploadedBy': uploadedBy,
+      // Local App properties
       'id': id,
-      'title': title,
       'category': category,
       'fileName': fileName,
-      'uploadedBy': uploadedBy,
-      'uploadedAt': uploadedAt.toIso8601String(),
       'visibility': visibility,
     };
   }
 
-  factory DocumentModel.fromMap(Map<String, dynamic> map) {
+  factory DocumentModel.fromMap(Map<String, dynamic> map, String docId) {
     return DocumentModel(
-      id: map['id'] ?? '',
-      title: map['title'] ?? '',
-      category: map['category'] ?? 'Circulars',
-      fileName: map['fileName'] ?? '',
+      id: docId,
+      title: map['name'] ?? map['title'] ?? '',
+      category: map['type'] ?? map['category'] ?? 'Circulars',
+      fileName: map['url'] ?? map['fileName'] ?? '',
       uploadedBy: map['uploadedBy'] ?? '',
-      uploadedAt: DateTime.parse(map['uploadedAt']),
+      uploadedAt: map['uploadedAt'] != null ? DateTime.parse(map['uploadedAt']) : DateTime.now(),
       visibility: map['visibility'] ?? 'member',
     );
   }

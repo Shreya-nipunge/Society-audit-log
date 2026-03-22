@@ -73,7 +73,7 @@ class _MemberListScreenState extends State<MemberListScreen>
         return u.name.toLowerCase().contains(q) ||
             u.flatNumber.toLowerCase().contains(q) ||
             u.email.toLowerCase().contains(q) ||
-            u.mobile.contains(q);
+            u.phone.contains(q);
       }).toList();
     }
 
@@ -118,7 +118,7 @@ class _MemberListScreenState extends State<MemberListScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              final updated = member.copyWith(isActive: false);
+              final updated = member.copyWith(status: 'inactive');
               MockData.updateUser(updated);
               AuditService.logAction(
                 actionType: 'DEACTIVATE_USER',
@@ -148,7 +148,7 @@ class _MemberListScreenState extends State<MemberListScreen>
   }
 
   void _reactivateMember(UserModel member) {
-    final updated = member.copyWith(isActive: true);
+    final updated = member.copyWith(status: 'active');
     MockData.updateUser(updated);
     AuditService.logAction(
       actionType: 'REACTIVATE_USER',
@@ -435,7 +435,7 @@ class _MemberListScreenState extends State<MemberListScreen>
                       const SizedBox(width: 3),
                       Flexible(
                         child: Text(
-                          member.mobile,
+                          member.phone,
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,

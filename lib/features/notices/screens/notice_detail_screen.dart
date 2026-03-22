@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../models/notice_model.dart';
 
 class NoticeDetailScreen extends StatelessWidget {
-  final Map<String, String> notice;
+  final NoticeModel notice;
 
   const NoticeDetailScreen({super.key, required this.notice});
 
@@ -29,7 +30,7 @@ class NoticeDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                notice['category'] ?? 'General',
+                'Notice',
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
@@ -37,7 +38,7 @@ class NoticeDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(notice['title'] ?? 'No Title', style: AppTextStyles.h2),
+            Text(notice.title, style: AppTextStyles.h2),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -47,7 +48,7 @@ class NoticeDetailScreen extends StatelessWidget {
                   color: AppColors.textHint,
                 ),
                 const SizedBox(width: 8),
-                Text(notice['date'] ?? '', style: AppTextStyles.caption),
+                Text('${notice.date.day}/${notice.date.month}/${notice.date.year}', style: AppTextStyles.caption),
               ],
             ),
             const Padding(
@@ -55,7 +56,7 @@ class NoticeDetailScreen extends StatelessWidget {
               child: Divider(),
             ),
             Text(
-              notice['content'] ?? 'No content available.',
+              notice.body,
               style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
             ),
           ],

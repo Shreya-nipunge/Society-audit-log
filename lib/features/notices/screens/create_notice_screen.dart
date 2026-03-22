@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/mock_data.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../models/notice_model.dart';
 
 class CreateNoticeScreen extends StatefulWidget {
   const CreateNoticeScreen({super.key});
@@ -39,16 +39,16 @@ class _CreateNoticeScreenState extends State<CreateNoticeScreen> {
   void _handleSave() {
     if (!_formKey.currentState!.validate()) return;
 
-    final newNotice = {
-      'id': 'n_${DateTime.now().millisecondsSinceEpoch}',
-      'title': _titleController.text,
-      'date': DateFormat('dd MMM yyyy').format(DateTime.now()),
-      'category': _selectedCategory,
-      'status': _isDraft ? 'Draft' : 'Published',
-      'content': _contentController.text,
-    };
+    final newNotice = NoticeModel(
+      id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+      title: _titleController.text,
+      date: DateTime.now(),
+      status: _isDraft ? 'Draft' : 'Published',
+      body: _contentController.text,
+      author: 'Secretary',
+    );
 
-    MockData.addNotice(newNotice);
+    MockData.notices.insert(0, newNotice);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

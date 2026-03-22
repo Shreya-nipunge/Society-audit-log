@@ -6,6 +6,8 @@ import '../../features/billing/models/demand_notice_model.dart';
 import '../../features/billing/models/bill_model.dart';
 import '../../features/audit/models/document_model.dart';
 import '../../features/audit/models/expense_model.dart';
+import '../../features/complaints/models/complaint_model.dart';
+import '../../features/notices/models/notice_model.dart';
 
 class MockData {
   // Use a modifiable list to support CRUD in the mock environment
@@ -17,93 +19,50 @@ class MockData {
 
   static List<UserModel> users = [
     UserModel(
-      id: 'admin_1',
+      uid: 'admin_1',
       name: 'John Chairman',
       email: 'chairman@society.com',
       password: '123456',
-      mobile: '9876543210',
+      phone: '9876543210',
       flatNumber: 'A-001',
       role: UserRole.chairman,
       societyId: 'society_123',
       createdBy: 'System',
     ),
     UserModel(
-      id: 'admin_2',
+      uid: 'admin_2',
       name: 'Alice Secretary',
       email: 'secretary@society.com',
       password: '123456',
-      mobile: '9876543211',
+      phone: '9876543211',
       flatNumber: 'A-002',
       role: UserRole.secretary,
       societyId: 'society_123',
       createdBy: 'System',
     ),
     UserModel(
-      id: 'admin_3',
+      uid: 'admin_3',
       name: 'Bob Treasurer',
       email: 'treasurer@society.com',
       password: '123456',
-      mobile: '9876543212',
+      phone: '9876543212',
       flatNumber: 'A-003',
       role: UserRole.treasurer,
       societyId: 'society_123',
       createdBy: 'System',
     ),
-    UserModel(
-      id: 'member_1',
-      name: 'Member One',
-      email: 'member1@gmail.com',
-      password: '123456',
-      mobile: '1234567890',
-      flatNumber: 'A-101',
-      role: UserRole.member,
-      societyId: 'society_123',
-      createdBy: 'admin_1',
-    ),
-    UserModel(
-      id: 'member_2',
-      name: 'Member Two',
-      email: 'a102@society.com',
-      password: '123456',
-      mobile: '1234567891',
-      flatNumber: 'A-102',
-      role: UserRole.member,
-      societyId: 'society_123',
-      createdBy: 'admin_2',
-    ),
-    UserModel(
-      id: 'member_3',
-      name: 'Member Three',
-      email: 'a103@society.com',
-      password: '123456',
-      mobile: '1234567892',
-      flatNumber: 'A-103',
-      role: UserRole.member,
-      societyId: 'society_123',
-      createdBy: 'admin_2',
-    ),
-    UserModel(
-      id: 'member_4',
-      name: 'Member Four',
-      email: 'a104@society.com',
-      password: '123456',
-      mobile: '1234567893',
-      flatNumber: 'A-104',
-      role: UserRole.member,
-      societyId: 'society_123',
-      createdBy: 'admin_1',
-    ),
-    UserModel(
-      id: 'member_5',
-      name: 'Member Five',
-      email: 'a105@society.com',
-      password: '123456',
-      mobile: '1234567894',
-      flatNumber: 'A-105',
-      role: UserRole.member,
-      societyId: 'society_123',
-      createdBy: 'admin_1',
-    ),
+    UserModel(uid: 'member_1', name: 'Rajesh Sharma', email: 'rajesh.sharma@gmail.com', password: '123456', phone: '9823456701', flatNumber: 'A-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_2', name: 'Priya Mehta', email: 'priya.mehta@gmail.com', password: '123456', phone: '9823456702', flatNumber: 'A-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
+    UserModel(uid: 'member_3', name: 'Suresh Patil', email: 'suresh.patil@gmail.com', password: '123456', phone: '9823456703', flatNumber: 'A-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
+    UserModel(uid: 'member_4', name: 'Anita Desai', email: 'anita.desai@gmail.com', password: '123456', phone: '9823456704', flatNumber: 'A-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_5', name: 'Vikram Joshi', email: 'vikram.joshi@gmail.com', password: '123456', phone: '9823456705', flatNumber: 'B-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_6', name: 'Kavita Nair', email: 'kavita.nair@gmail.com', password: '123456', phone: '9823456706', flatNumber: 'B-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
+    UserModel(uid: 'member_7', name: 'Amit Kulkarni', email: 'amit.kulkarni@gmail.com', password: '123456', phone: '9823456707', flatNumber: 'B-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_8', name: 'Sunita Rao', email: 'sunita.rao@gmail.com', password: '123456', phone: '9823456708', flatNumber: 'B-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
+    UserModel(uid: 'member_9', name: 'Deepak Verma', email: 'deepak.verma@gmail.com', password: '123456', phone: '9823456709', flatNumber: 'C-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_10', name: 'Pooja Iyer', email: 'pooja.iyer@gmail.com', password: '123456', phone: '9823456710', flatNumber: 'C-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
+    UserModel(uid: 'member_11', name: 'Rahul Gupta', email: 'rahul.gupta@gmail.com', password: '123456', phone: '9823456711', flatNumber: 'C-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
+    UserModel(uid: 'member_12', name: 'Meena Pillai', email: 'meena.pillai@gmail.com', password: '123456', phone: '9823456712', flatNumber: 'C-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
   ];
 
   static List<TransactionModel> transactions = [
@@ -113,8 +72,11 @@ class MockData {
       memberName: 'Member One',
       flatNo: 'A-101',
       amount: 4500.0,
-      paymentMode: 'UPI',
-      referenceNo: 'upi_123456789',
+      paymentMethod: 'UPI',
+      referenceId: 'upi_123456789',
+      date: DateTime.now().subtract(const Duration(days: 45)),
+      transactionType: 'Maintenance',
+      status: 'Success',
       allocation: FundAllocation(
         maintenance: 3000,
         sinkingFund: 500,
@@ -143,6 +105,15 @@ class MockData {
   ];
 
   static List<BillModel> bills = []; // New bill storage
+
+  // --- Complaints ---
+  static List<ComplaintModel> complaints = [
+    ComplaintModel(id: 'cmp_1', memberId: 'member_1', memberName: 'Rajesh Sharma', flatNumber: 'A-101', category: ComplaintCategory.water, title: 'Low water pressure in morning', description: 'Water pressure is very low between 6 AM to 9 AM. It is difficult to fill water for daily use.', status: ComplaintStatus.inProgress, createdAt: DateTime.now().subtract(const Duration(days: 5)), updatedAt: DateTime.now().subtract(const Duration(days: 2)), adminRemarks: 'Plumber has been called, will be fixed by this weekend.'),
+    ComplaintModel(id: 'cmp_2', memberId: 'member_2', memberName: 'Priya Mehta', flatNumber: 'A-102', category: ComplaintCategory.noise, title: 'Loud music from flat A-201', description: 'Residents of A-201 play loud music late at night, disturbing sleep. This has been happening for the past 2 weeks.', status: ComplaintStatus.pending, createdAt: DateTime.now().subtract(const Duration(days: 3)), updatedAt: DateTime.now().subtract(const Duration(days: 3))),
+    ComplaintModel(id: 'cmp_3', memberId: 'member_3', memberName: 'Suresh Patil', flatNumber: 'A-103', category: ComplaintCategory.parking, title: 'Unauthorized vehicle in my parking slot', description: 'An unknown vehicle with number MH-12-AB-1234 is regularly parked in my designated slot P-23.', status: ComplaintStatus.resolved, createdAt: DateTime.now().subtract(const Duration(days: 10)), updatedAt: DateTime.now().subtract(const Duration(days: 7)), adminRemarks: 'Vehicle owner has been warned. Issue resolved.', resolvedBy: 'Rajendra Joshi'),
+    ComplaintModel(id: 'cmp_4', memberId: 'member_5', memberName: 'Vikram Joshi', flatNumber: 'B-101', category: ComplaintCategory.maintenance, title: 'Lift not working on 3rd floor', description: 'The lift door does not open properly on the 3rd floor. It requires multiple attempts. Senior citizens are facing difficulty.', status: ComplaintStatus.pending, createdAt: DateTime.now().subtract(const Duration(days: 1)), updatedAt: DateTime.now().subtract(const Duration(days: 1))),
+    ComplaintModel(id: 'cmp_5', memberId: 'member_7', memberName: 'Amit Kulkarni', flatNumber: 'B-103', category: ComplaintCategory.cleanliness, title: 'Garbage not collected from B wing', description: 'Garbage has not been collected from B wing staircase for 3 days. It is causing bad smell and hygiene issues.', status: ComplaintStatus.inProgress, createdAt: DateTime.now().subtract(const Duration(days: 2)), updatedAt: DateTime.now().subtract(const Duration(hours: 12)), adminRemarks: 'Housekeeping staff notified.'),
+  ];
 
   static List<DocumentModel> societyDocuments = [
     DocumentModel(
@@ -287,7 +258,7 @@ class MockData {
   static void deleteUser(String id) {
     final index = users.indexWhere((u) => u.id == id);
     if (index != -1) {
-      users[index] = users[index].copyWith(isActive: false);
+      users[index] = users[index].copyWith(status: 'inactive');
     }
   }
 
@@ -332,6 +303,20 @@ class MockData {
   // --- New Bill Management ---
   static void addBill(BillModel bill) {
     bills.add(bill);
+  }
+
+  // --- Complaint Methods ---
+  static void addComplaint(ComplaintModel complaint) {
+    complaints.insert(0, complaint);
+  }
+
+  static List<ComplaintModel> getAllComplaints() {
+    return List.from(complaints)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  static List<ComplaintModel> getComplaintsForMember(String memberId) {
+    return complaints.where((c) => c.memberId == memberId).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   static List<BillModel> getUnpaidBillsForMember(String memberId) {
@@ -400,54 +385,52 @@ class MockData {
     };
   }
 
-  static List<Map<String, String>> notices = [
-    {
-      'id': '1',
-      'title': 'Annual General Meeting',
-      'date': '25 Mar 2026',
-      'category': 'General',
-      'status': 'Published',
-      'content':
+  static List<NoticeModel> notices = [
+    NoticeModel(
+      id: '1',
+      title: 'Annual General Meeting',
+      date: DateTime(2026, 3, 25),
+      status: 'Published',
+      body:
           'The Annual General Meeting of the society will be held on 25th March 2026 at the Society Clubhouse. All members are requested to attend.\n\nAgenda:\n1. Minutes of previous meeting.\n2. Approval of financial statements.\n3. Election of committee members.',
-    },
-    {
-      'id': 'd1',
-      'title': 'Republic Day Celebration (Draft)',
-      'date': '26 Jan 2026',
-      'category': 'Event',
-      'status': 'Draft',
-      'content':
-          'Planning for Republic Day celebration. Flag hoisting at 8:00 AM.',
-    },
-    {
-      'id': 'd2',
-      'title': 'Lift Painting Schedule (Draft)',
-      'date': '10 Mar 2026',
-      'category': 'Maintenance',
-      'status': 'Draft',
-      'content':
-          'Lifts will be painted on 10th and 11th March. Please use stairs.',
-    },
-    {
-      'id': '2',
-      'title': 'Water Supply Maintenance',
-      'date': '22 Feb 2026',
-      'category': 'Maintenance',
-      'status': 'Published',
-      'content':
+      author: 'Secretary',
+    ),
+    NoticeModel(
+      id: 'd1',
+      title: 'Republic Day Celebration (Draft)',
+      date: DateTime(2026, 1, 26),
+      status: 'Draft',
+      body: 'Flag hoisting ceremony will be held at 9 AM in the main ground.',
+      author: 'Chairman',
+    ),
+    NoticeModel(
+      id: 'd2',
+      title: 'Lift Painting Schedule',
+      date: DateTime(2026, 3, 10),
+      status: 'Draft',
+      body: 'Lifts will be painted on 10th and 11th March. Please use stairs.',
+      author: 'Maintenance Manager',
+    ),
+    NoticeModel(
+      id: '2',
+      title: 'Water Supply Maintenance',
+      date: DateTime(2026, 2, 22),
+      status: 'Published',
+      body:
           'The water supply will be suspended on 22nd February 2026 from 10:00 AM to 4:00 PM for cleaning and maintenance of the overhead tanks.\n\nPlease store sufficient water for your daily needs.',
-    },
-    {
-      'id': '3',
-      'title': 'Security Drill Notification',
-      'date': '05 Mar 2026',
-      'category': 'Security',
-      'status': 'Published',
-      'content':
+      author: 'Secretary',
+    ),
+    NoticeModel(
+      id: '3',
+      title: 'Security Drill Notification',
+      date: DateTime(2026, 3, 5),
+      status: 'Published',
+      body:
           'A fire safety drill is scheduled for 5th March 2026 at 11:00 AM. This drill is mandatory for all residents to understand the evacuation protocol. Please gather near the main gate upon hearing the alarm.',
-    },
+      author: 'Security Chief',
+    ),
   ];
-  static void addNotice(Map<String, String> notice) {
+  static void addNotice(NoticeModel notice) {
     notices.insert(0, notice);
   }
 }

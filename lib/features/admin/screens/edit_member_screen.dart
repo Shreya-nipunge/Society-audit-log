@@ -34,11 +34,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.member.name);
-    _mobileController = TextEditingController(text: widget.member.mobile);
+    _mobileController = TextEditingController(text: widget.member.phone);
     _emailController = TextEditingController(text: widget.member.email);
     _flatController = TextEditingController(text: widget.member.flatNumber);
     _selectedRole = widget.member.role;
-    _isActive = widget.member.isActive;
+    _isActive = widget.member.status == 'active';
   }
 
   @override
@@ -75,7 +75,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
           'Name: ${widget.member.name} → ${_nameController.text.trim()}',
         );
       }
-      if (_mobileController.text.trim() != widget.member.mobile) {
+      if (_mobileController.text.trim() != widget.member.phone) {
         changes.add('Mobile updated');
       }
       if (_flatController.text.trim() != widget.member.flatNumber) {
@@ -88,7 +88,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
           'Role: ${widget.member.role.label} → ${_selectedRole.label}',
         );
       }
-      if (_isActive != widget.member.isActive) {
+      if (_isActive != (widget.member.status == 'active')) {
         changes.add(_isActive ? 'Reactivated' : 'Deactivated');
       }
       if (_showPasswordReset && _newPasswordController.text.trim().isNotEmpty) {
@@ -97,11 +97,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
 
       final updatedUser = widget.member.copyWith(
         name: _nameController.text.trim(),
-        mobile: _mobileController.text.trim(),
+        phone: _mobileController.text.trim(),
         email: _emailController.text.trim(),
         flatNumber: _flatController.text.trim(),
         role: _selectedRole,
-        isActive: _isActive,
+        status: _isActive ? 'active' : 'inactive',
         password:
             _showPasswordReset && _newPasswordController.text.trim().isNotEmpty
             ? _newPasswordController.text.trim()

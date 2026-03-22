@@ -43,7 +43,7 @@ class MyDuesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '₹${unpaidBills.fold(0.0, (sum, b) => sum + b.total).toStringAsFixed(0)}',
+                      '₹${unpaidBills.fold(0.0, (sum, b) => sum + b.totalAmount).toStringAsFixed(0)}',
                       style: AppTextStyles.h3.copyWith(color: AppColors.error),
                     ),
                   ],
@@ -113,7 +113,7 @@ class MyDuesScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(bill.month, style: AppTextStyles.labelLarge),
+              Text(bill.monthString, style: AppTextStyles.labelLarge),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -147,7 +147,7 @@ class MyDuesScreen extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                '₹${bill.total.toStringAsFixed(0)}',
+                '₹${bill.totalAmount.toStringAsFixed(0)}',
                 style: AppTextStyles.labelLarge.copyWith(
                   color: AppColors.primary,
                 ),

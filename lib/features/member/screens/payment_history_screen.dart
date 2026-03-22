@@ -79,7 +79,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final tx = _history[index];
-                final dateStr = DateFormat('dd MMM yyyy').format(tx.recordedAt);
+                final dateStr = DateFormat('dd MMM yyyy').format(tx.date);
 
                 return Container(
                   padding: const EdgeInsets.all(16),

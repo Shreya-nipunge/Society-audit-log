@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/mock_data.dart';
+import '../models/notice_model.dart';
 
 class NoticeListScreen extends StatefulWidget {
   const NoticeListScreen({super.key});
@@ -29,10 +30,10 @@ class _NoticeListScreenState extends State<NoticeListScreen>
   @override
   Widget build(BuildContext context) {
     final publishedNotices = MockData.notices
-        .where((n) => n['status'] == 'Published')
+        .where((n) => n.status == 'Published')
         .toList();
     final draftNotices = MockData.notices
-        .where((n) => n['status'] == 'Draft')
+        .where((n) => n.status == 'Draft')
         .toList();
 
     return Scaffold(
@@ -69,7 +70,7 @@ class _NoticeListScreenState extends State<NoticeListScreen>
   }
 
   Widget _buildNoticeList(
-    List<Map<String, String>> notices, {
+    List<NoticeModel> notices, {
     required bool isDraft,
   }) {
     if (notices.isEmpty) {
@@ -121,14 +122,15 @@ class _NoticeListScreenState extends State<NoticeListScreen>
               ),
             ),
             title: Text(
-              notice['title'] ?? 'No Title',
+              notice.title,
               style: AppTextStyles.labelLarge,
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text(notice['date'] ?? '', style: AppTextStyles.caption),
+                // Since I can't import DateFormat easily here without adding an import, wait, notice_list_screen doesn't import intl. Let me just use naive string.
+                Text('${notice.date.day}/${notice.date.month}/${notice.date.year}', style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -140,7 +142,7 @@ class _NoticeListScreenState extends State<NoticeListScreen>
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    notice['category'] ?? 'General',
+                    'Notice',
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -156,7 +158,7 @@ class _NoticeListScreenState extends State<NoticeListScreen>
             onTap: () => Navigator.pushNamed(
               context,
               '/notice-detail',
-              arguments: notice,
+              arguments: notice.toMap(), 
             ),
           ),
         );

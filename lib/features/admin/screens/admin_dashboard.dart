@@ -437,7 +437,7 @@ class AdminDashboard extends StatelessWidget {
         .length;
 
     final draftsCount = MockData.notices
-        .where((n) => n['status'] == 'Draft')
+        .where((n) => n.status == 'Draft')
         .length;
 
     return Container(

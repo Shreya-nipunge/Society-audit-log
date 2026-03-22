@@ -29,7 +29,11 @@ import 'features/notices/screens/create_notice_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
+import 'features/complaints/screens/submit_complaint_screen.dart';
+import 'features/complaints/screens/my_complaints_screen.dart';
+import 'features/complaints/screens/admin_complaints_screen.dart';
 import 'features/auth/models/user_model.dart';
+import 'features/notices/models/notice_model.dart';
 import 'core/guards/role_guard.dart';
 import 'core/widgets/error_boundary.dart';
 
@@ -191,10 +195,10 @@ class SocietyAuditLogApp extends StatelessWidget {
             child: RecordExpenseScreen(),
           ),
           '/notice-detail': (context) {
-            final args =
+            final notice =
                 ModalRoute.of(context)!.settings.arguments
-                    as Map<String, String>;
-            return NoticeDetailScreen(notice: args);
+                    as NoticeModel;
+            return NoticeDetailScreen(notice: notice);
           },
           '/notice-list': (context) => const RoleGuard(
             allowedRoles: [
@@ -207,6 +211,18 @@ class SocietyAuditLogApp extends StatelessWidget {
           '/create-notice': (context) => const RoleGuard(
             allowedRoles: [UserRole.chairman, UserRole.secretary],
             child: CreateNoticeScreen(),
+          ),
+          '/my-complaints': (context) => const RoleGuard(
+            allowedRoles: [UserRole.member],
+            child: MyComplaintsScreen(),
+          ),
+          '/submit-complaint': (context) => const RoleGuard(
+            allowedRoles: [UserRole.member],
+            child: SubmitComplaintScreen(),
+          ),
+          '/admin-complaints': (context) => const RoleGuard(
+            allowedRoles: [UserRole.chairman, UserRole.secretary, UserRole.treasurer],
+            child: AdminComplaintsScreen(),
           ),
         },
       ),

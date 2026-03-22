@@ -19,7 +19,7 @@ class _MemberProfileScreenState extends State<MemberProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _mobileController.text = SessionManager.currentUser?.mobile ?? '';
+    _mobileController.text = SessionManager.currentUser?.phone ?? '';
   }
 
   @override
@@ -111,7 +111,7 @@ class _MemberProfileScreenState extends State<MemberProfileScreen> {
                           )
                         else
                           Text(
-                            user.mobile,
+                            user.phone,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
