@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -52,8 +53,8 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA7AZwM4PYRi52jzmlLMTIyjqrMDAyt3Vs',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: dotenv.env['GOOGLE_API_KEY'] ?? '',
     appId: '1:459939793437:android:75b88808257f83d0b414f4',
     messagingSenderId: '459939793437',
     projectId: 'society-audit-log',
