@@ -2,13 +2,32 @@
 
 :root {
   --font-inter: "Inter", system-ui, sans-serif;
+  /* Corporate FinTech — Society Audit Log Color System */
+  --color-primary: #0F2040;
+  --color-primary-light: #1E3A66;
+  --color-primary-dark: #071228;
+  --color-secondary: #C5A065;
+  --color-secondary-light: #E5C48A;
+  --color-secondary-dark: #967635;
+  --color-surface: #FFFFFF;
+  --color-background: #F8F9FB;
+  --color-success: #2E7D32;
+  --color-warning: #ED6C02;
+  --color-error: #D32F2F;
+  --color-info: #0288D1;
+  --color-text-primary: #000000;
+  --color-text-secondary: #2C2F33;
+  --color-text-hint: #636C7A;
+  --color-border: #E0E2E7;
+  --color-divider: #EEEEEE;
 }
 
 body {
   font-family: var(--font-inter);
+  background-color: var(--color-background);
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — Corporate FinTech */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -17,14 +36,20 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C5A06540;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #C5A065;
 }
 
 /* Smooth transitions */
 * {
   scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(197, 160, 101, 0.2);
+  color: #0F2040;
 }

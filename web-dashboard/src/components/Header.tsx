@@ -11,34 +11,35 @@ export function Header({ title, subtitle }: HeaderProps) {
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
       <div className="flex items-center justify-between px-8 py-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{title}</h1>
-          {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: "#0F2040" }}>{title}</h1>
+          {subtitle && <p className="text-sm mt-0.5" style={{ color: "#636C7A" }}>{subtitle}</p>}
         </div>
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="hidden md:flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-64">
-            <Search size={16} className="text-slate-400" />
+          <div className="hidden md:flex items-center gap-2 rounded-lg px-3 py-2 w-64" style={{ backgroundColor: "#F8F9FB" }}>
+            <Search size={16} style={{ color: "#636C7A" }} />
             <input
               type="text"
               placeholder="Search..."
-              className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
+              className="bg-transparent text-sm outline-none w-full placeholder:text-[#636C7A]"
+              style={{ color: "#2C2F33" }}
             />
           </div>
 
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors">
-            <Bell size={20} className="text-slate-500" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            <Bell size={20} style={{ color: "#636C7A" }} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: "#D32F2F" }} />
           </button>
 
           {/* Profile */}
-          <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div className="flex items-center gap-2 pl-3 border-l" style={{ borderColor: "#E0E2E7" }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0F2040, #1E3A66)" }}>
               <User size={16} className="text-white" />
             </div>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium text-slate-700">Admin</p>
-              <p className="text-[10px] text-slate-400">Secretary</p>
+              <p className="text-sm font-medium" style={{ color: "#0F2040" }}>Admin</p>
+              <p className="text-[10px]" style={{ color: "#C5A065" }}>Secretary</p>
             </div>
           </div>
         </div>

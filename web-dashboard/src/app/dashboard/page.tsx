@@ -6,7 +6,7 @@ import { formatCompact, formatDate } from "@/lib/utils";
 import { IndianRupee, Users, AlertTriangle, TrendingUp, Activity, ArrowDownRight, ArrowUpRight, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-const CHART_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#ec4899", "#f43f5e", "#f97316", "#eab308"];
+const CHART_COLORS = ["#0F2040", "#1E3A66", "#C5A065", "#E5C48A", "#967635", "#0288D1", "#2E7D32"];
 
 export default function DashboardPage() {
   const totalMembers = mockUsers.filter((u) => u.role === "member").length;
@@ -78,29 +78,29 @@ export default function DashboardPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Revenue vs Expenses Bar Chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-1">Revenue vs Expenses</h3>
-            <p className="text-xs text-slate-400 mb-4">Monthly comparison for 2025</p>
+          <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#E0E2E7" }}>
+            <h3 className="text-sm font-semibold mb-1" style={{ color: "#0F2040" }}>Revenue vs Expenses</h3>
+            <p className="text-xs mb-4" style={{ color: "#636C7A" }}>Monthly comparison for 2025</p>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={monthlyData} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v) => `₹${(v/1000).toFixed(0)}K`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E0E2E7" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#636C7A" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#636C7A" tickFormatter={(v) => `₹${(v/1000).toFixed(0)}K`} />
                 <Tooltip
                   formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, ""]}
                   contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="collected" name="Collected" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expenses" name="Expenses" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="collected" name="Collected" fill="#2E7D32" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" name="Expenses" fill="#C5A065" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Expense Breakdown Pie Chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-1">Expense Breakdown</h3>
-            <p className="text-xs text-slate-400 mb-4">By category</p>
+          <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#E0E2E7" }}>
+            <h3 className="text-sm font-semibold mb-1" style={{ color: "#0F2040" }}>Expense Breakdown</h3>
+            <p className="text-xs mb-4" style={{ color: "#636C7A" }}>By category</p>
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -126,25 +126,25 @@ export default function DashboardPage() {
         {/* Bottom Row: Audit Logs + Bills Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
+          <div className="lg:col-span-2 bg-white rounded-xl border p-6" style={{ borderColor: "#E0E2E7" }}>
             <div className="flex items-center gap-2 mb-4">
-              <Activity size={18} className="text-indigo-500" />
-              <h3 className="text-sm font-semibold text-slate-700">Recent Activity</h3>
+              <Activity size={18} style={{ color: "#C5A065" }} />
+              <h3 className="text-sm font-semibold" style={{ color: "#0F2040" }}>Recent Activity</h3>
             </div>
             <div className="space-y-3">
               {recentLogs.map((log) => (
                 <div key={log.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold
-                    ${log.action.includes("PAYMENT") ? "bg-emerald-50 text-emerald-600"
-                    : log.action.includes("EXPENSE") ? "bg-purple-50 text-purple-600"
-                    : log.action.includes("MEMBER") ? "bg-blue-50 text-blue-600"
-                    : log.action.includes("NOTICE") ? "bg-amber-50 text-amber-600"
-                    : "bg-slate-50 text-slate-600"}`}
+                    ${log.action.includes("PAYMENT") ? "bg-[#2E7D32]/10 text-[#2E7D32]"
+                    : log.action.includes("EXPENSE") ? "bg-[#C5A065]/10 text-[#967635]"
+                    : log.action.includes("MEMBER") ? "bg-[#0288D1]/10 text-[#0288D1]"
+                    : log.action.includes("NOTICE") ? "bg-[#ED6C02]/10 text-[#ED6C02]"
+                    : "bg-[#0F2040]/5 text-[#0F2040]"}`}
                   >
                     {log.action.slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">
+                    <p className="text-sm font-medium truncate" style={{ color: "#0F2040" }}>
                       {log.action.replace(/_/g, " ")}
                     </p>
                     <p className="text-xs text-slate-400">
@@ -161,29 +161,29 @@ export default function DashboardPage() {
           </div>
 
           {/* Bills Summary */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-4">Bills Summary</h3>
+          <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#E0E2E7" }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: "#0F2040" }}>Bills Summary</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
-                <span className="text-sm font-medium text-emerald-700">Paid</span>
-                <span className="text-lg font-bold text-emerald-700">{paidBills}</span>
+              <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "rgba(46,125,50,0.06)" }}>
+                <span className="text-sm font-medium" style={{ color: "#2E7D32" }}>Paid</span>
+                <span className="text-lg font-bold" style={{ color: "#2E7D32" }}>{paidBills}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                <span className="text-sm font-medium text-amber-700">Pending</span>
-                <span className="text-lg font-bold text-amber-700">{pendingBills}</span>
+              <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "rgba(197,160,101,0.08)" }}>
+                <span className="text-sm font-medium" style={{ color: "#967635" }}>Pending</span>
+                <span className="text-lg font-bold" style={{ color: "#967635" }}>{pendingBills}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-rose-50 rounded-lg">
-                <span className="text-sm font-medium text-rose-700">Overdue</span>
-                <span className="text-lg font-bold text-rose-700">{overdueBills}</span>
+              <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "rgba(211,47,47,0.06)" }}>
+                <span className="text-sm font-medium" style={{ color: "#D32F2F" }}>Overdue</span>
+                <span className="text-lg font-bold" style={{ color: "#D32F2F" }}>{overdueBills}</span>
               </div>
-              <div className="pt-3 border-t border-slate-100">
+              <div className="pt-3 border-t" style={{ borderColor: "#E0E2E7" }}>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Total Billed</span>
-                  <span className="font-bold text-slate-900">{formatCompact(totalBilled)}</span>
+                  <span style={{ color: "#636C7A" }}>Total Billed</span>
+                  <span className="font-bold" style={{ color: "#0F2040" }}>{formatCompact(totalBilled)}</span>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
-                  <span className="text-slate-500">Net Collected</span>
-                  <span className="font-bold text-emerald-600">{formatCompact(totalCollected)}</span>
+                  <span style={{ color: "#636C7A" }}>Net Collected</span>
+                  <span className="font-bold" style={{ color: "#2E7D32" }}>{formatCompact(totalCollected)}</span>
                 </div>
               </div>
             </div>

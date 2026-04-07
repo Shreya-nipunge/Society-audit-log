@@ -7,9 +7,9 @@ import { Receipt, CheckCircle, Clock, AlertTriangle, Search, Filter } from "luci
 import { useState } from "react";
 
 const statusColors: Record<string, string> = {
-  Paid: "bg-emerald-50 text-emerald-700",
-  Pending: "bg-amber-50 text-amber-700",
-  Overdue: "bg-rose-50 text-rose-700",
+  Paid: "bg-[#2E7D32]/10 text-[#2E7D32]",
+  Pending: "bg-[#C5A065]/10 text-[#967635]",
+  Overdue: "bg-[#D32F2F]/10 text-[#D32F2F]",
 };
 
 const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -45,13 +45,13 @@ export default function BillsPage() {
 
         {/* Toolbar */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 w-72">
-            <Search size={16} className="text-slate-400" />
-            <input type="text" placeholder="Search flat or member..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent text-sm outline-none w-full" />
+          <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 w-72" style={{ border: "1px solid #E0E2E7" }}>
+            <Search size={16} style={{ color: "#636C7A" }} />
+            <input type="text" placeholder="Search flat or member..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent text-sm outline-none w-full placeholder:text-[#636C7A]" style={{ color: "#2C2F33" }} />
           </div>
-          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1">
+          <div className="flex items-center gap-1 bg-white rounded-lg px-2 py-1" style={{ border: "1px solid #E0E2E7" }}>
             {["all", "Paid", "Pending", "Overdue"].map((s) => (
-              <button key={s} onClick={() => setStatusFilter(s)} className={cn("px-3 py-1.5 rounded-md text-xs font-medium transition-all", statusFilter === s ? "bg-indigo-100 text-indigo-700" : "text-slate-500 hover:bg-slate-50")}>
+              <button key={s} onClick={() => setStatusFilter(s)} className="px-3 py-1.5 rounded-md text-xs font-medium transition-all" style={statusFilter === s ? { backgroundColor: "#0F2040", color: "#FFFFFF" } : { color: "#636C7A" }}>
                 {s === "all" ? "All" : s}
               </button>
             ))}
@@ -59,19 +59,19 @@ export default function BillsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid #E0E2E7" }}>
           <table className="w-full">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Member</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Flat</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Period</th>
-                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Maintenance</th>
-                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Other</th>
-                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Total</th>
-                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Paid</th>
-                <th className="text-center text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Status</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Due Date</th>
+              <tr style={{ backgroundColor: "#F8F9FB", borderBottom: "1px solid #E0E2E7" }}>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Member</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Flat</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Period</th>
+                <th className="text-right text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Maintenance</th>
+                <th className="text-right text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Other</th>
+                <th className="text-right text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Total</th>
+                <th className="text-right text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Paid</th>
+                <th className="text-center text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Status</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider px-6 py-3" style={{ color: "#636C7A" }}>Due Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -79,27 +79,27 @@ export default function BillsPage() {
                 const member = mockUsers.find((u) => u.uid === bill.memberId);
                 return (
                   <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-3.5 text-sm font-medium text-slate-700">{member?.name || "—"}</td>
-                    <td className="px-6 py-3.5 text-sm text-slate-600">{bill.flatNumber}</td>
-                    <td className="px-6 py-3.5 text-sm text-slate-600">{months[bill.month]} {bill.year}</td>
-                    <td className="px-6 py-3.5 text-sm text-slate-600 text-right">₹{bill.maintenanceAmount.toLocaleString("en-IN")}</td>
-                    <td className="px-6 py-3.5 text-sm text-slate-600 text-right">₹{bill.otherCharges.toLocaleString("en-IN")}</td>
-                    <td className="px-6 py-3.5 text-sm font-semibold text-slate-800 text-right">₹{bill.totalAmount.toLocaleString("en-IN")}</td>
+                    <td className="px-6 py-3.5 text-sm font-medium" style={{ color: "#2C2F33" }}>{member?.name || "—"}</td>
+                    <td className="px-6 py-3.5 text-sm" style={{ color: "#636C7A" }}>{bill.flatNumber}</td>
+                    <td className="px-6 py-3.5 text-sm" style={{ color: "#636C7A" }}>{months[bill.month]} {bill.year}</td>
+                    <td className="px-6 py-3.5 text-sm text-right" style={{ color: "#636C7A" }}>₹{bill.maintenanceAmount.toLocaleString("en-IN")}</td>
+                    <td className="px-6 py-3.5 text-sm text-right" style={{ color: "#636C7A" }}>₹{bill.otherCharges.toLocaleString("en-IN")}</td>
+                    <td className="px-6 py-3.5 text-sm font-semibold text-right" style={{ color: "#0F2040" }}>₹{bill.totalAmount.toLocaleString("en-IN")}</td>
                     <td className="px-6 py-3.5 text-sm font-medium text-right">
-                      <span className={bill.paidAmount > 0 ? "text-emerald-600" : "text-slate-400"}>₹{bill.paidAmount.toLocaleString("en-IN")}</span>
+                      <span style={{ color: bill.paidAmount > 0 ? "#2E7D32" : "#636C7A" }}>₹{bill.paidAmount.toLocaleString("en-IN")}</span>
                     </td>
                     <td className="px-6 py-3.5 text-center">
-                      <span className={cn("inline-flex px-2.5 py-1 rounded-full text-xs font-semibold", statusColors[bill.status] || "bg-slate-100 text-slate-600")}>{bill.status}</span>
+                      <span className={cn("inline-flex px-2.5 py-1 rounded-full text-xs font-semibold", statusColors[bill.status] || "")} style={!statusColors[bill.status] ? { backgroundColor: "#F8F9FB", color: "#636C7A" } : undefined}>{bill.status}</span>
                     </td>
-                    <td className="px-6 py-3.5 text-sm text-slate-500">{formatDate(bill.dueDate)}</td>
+                    <td className="px-6 py-3.5 text-sm" style={{ color: "#636C7A" }}>{formatDate(bill.dueDate)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-between">
-            <p className="text-xs text-slate-500">Showing {filtered.length} bills</p>
-            <p className="text-xs font-medium text-slate-600">Total: ₹{filtered.reduce((s, b) => s + b.totalAmount, 0).toLocaleString("en-IN")}</p>
+          <div className="px-6 py-3 flex justify-between" style={{ backgroundColor: "#F8F9FB", borderTop: "1px solid #E0E2E7" }}>
+            <p className="text-xs" style={{ color: "#636C7A" }}>Showing {filtered.length} bills</p>
+            <p className="text-xs font-medium" style={{ color: "#2C2F33" }}>Total: ₹{filtered.reduce((s, b) => s + b.totalAmount, 0).toLocaleString("en-IN")}</p>
           </div>
         </div>
       </div>

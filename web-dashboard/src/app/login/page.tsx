@@ -29,34 +29,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ backgroundColor: "#F8F9FB" }}>
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200 mb-4">
-            <Building2 size={24} className="text-white" />
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg mb-4"
+            style={{ background: "linear-gradient(135deg, #C5A065, #E5C48A)", boxShadow: "0 8px 24px rgba(197, 160, 101, 0.3)" }}>
+            <Building2 size={28} style={{ color: "#0F2040" }} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Society Audit Log</h1>
-          <p className="text-slate-500 text-sm mt-1">Admin & Auditor Portal</p>
+          <h1 className="text-2xl font-bold" style={{ color: "#0F2040" }}>Society Audit Log</h1>
+          <p className="text-sm mt-1" style={{ color: "#C5A065" }}>Admin & Auditor Portal</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderColor: "#E0E2E7", borderWidth: 1 }}>
           <div className="p-8">
-            <h2 className="text-xl font-bold text-slate-800 mb-6">Sign In</h2>
+            <h2 className="text-xl font-bold mb-6" style={{ color: "#0F2040" }}>Sign In</h2>
 
             {error && (
-              <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-3">
-                <AlertCircle size={18} className="text-rose-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-rose-700 font-medium leading-relaxed">{error}</p>
+              <div className="mb-6 p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: "#FDE8E8", border: "1px solid #FBBABA" }}>
+                <AlertCircle size={18} style={{ color: "#D32F2F" }} className="flex-shrink-0 mt-0.5" />
+                <p className="text-sm font-medium leading-relaxed" style={{ color: "#D32F2F" }}>{error}</p>
               </div>
             )}
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                <label className="text-sm font-semibold ml-1" style={{ color: "#2C2F33" }}>Email Address</label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#636C7A" }}>
                     <Mail size={18} />
                   </div>
                   <input
@@ -65,18 +66,21 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="admin@society.com"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all placeholder:text-[#636C7A]"
+                    style={{ backgroundColor: "#F8F9FB", border: "1.5px solid #E0E2E7", color: "#0F2040" }}
+                    onFocus={(e) => { e.target.style.borderColor = "#0F2040"; e.target.style.boxShadow = "0 0 0 3px rgba(15,32,64,0.08)"; }}
+                    onBlur={(e) => { e.target.style.borderColor = "#E0E2E7"; e.target.style.boxShadow = "none"; }}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between ml-1 mr-1">
-                  <label className="text-sm font-semibold text-slate-700">Password</label>
-                  <a href="#" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Forgot?</a>
+                  <label className="text-sm font-semibold" style={{ color: "#2C2F33" }}>Password</label>
+                  <a href="#" className="text-xs font-semibold" style={{ color: "#C5A065" }}>Forgot?</a>
                 </div>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#636C7A" }}>
                     <Lock size={18} />
                   </div>
                   <input
@@ -85,7 +89,10 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all placeholder:text-[#636C7A]"
+                    style={{ backgroundColor: "#F8F9FB", border: "1.5px solid #E0E2E7", color: "#0F2040" }}
+                    onFocus={(e) => { e.target.style.borderColor = "#0F2040"; e.target.style.boxShadow = "0 0 0 3px rgba(15,32,64,0.08)"; }}
+                    onBlur={(e) => { e.target.style.borderColor = "#E0E2E7"; e.target.style.boxShadow = "none"; }}
                   />
                 </div>
               </div>
@@ -93,7 +100,10 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full text-white py-3.5 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ backgroundColor: "#0F2040", boxShadow: "0 4px 12px rgba(15,32,64,0.25)" }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E3A66")}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0F2040")}
               >
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -104,8 +114,8 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-center">
-            <p className="text-xs text-slate-400 font-medium">© 2025 Shivkrupasagar CHS Ltd. · Security Audit Log</p>
+          <div className="px-8 py-5 flex items-center justify-center" style={{ backgroundColor: "#F8F9FB", borderTop: "1px solid #E0E2E7" }}>
+            <p className="text-xs font-medium" style={{ color: "#636C7A" }}>© 2025 Shivkrupasagar CHS Ltd. · Security Audit Log</p>
           </div>
         </div>
       </div>

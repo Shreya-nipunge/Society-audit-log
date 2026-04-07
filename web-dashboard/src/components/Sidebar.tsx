@@ -37,19 +37,20 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col",
+        "fixed left-0 top-0 z-40 h-screen text-white transition-all duration-300 flex flex-col",
         collapsed ? "w-[72px]" : "w-64"
       )}
+      style={{ background: "linear-gradient(180deg, #0F2040 0%, #071228 100%)" }}
     >
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-700/50">
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-          <Building2 size={20} className="text-white" />
+      <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #C5A065, #E5C48A)" }}>
+          <Building2 size={20} className="text-[#0F2040]" />
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold tracking-tight truncate">Society Audit</h1>
-            <p className="text-[10px] text-slate-400 truncate">Shivkrupasagar CHS Ltd.</p>
+            <p className="text-[10px] truncate" style={{ color: "#C5A065" }}>Shivkrupasagar CHS Ltd.</p>
           </div>
         )}
       </div>
@@ -65,16 +66,18 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group",
                 isActive
-                  ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                  ? "text-white border"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               )}
+              style={isActive ? { backgroundColor: "rgba(197, 160, 101, 0.15)", borderColor: "rgba(197, 160, 101, 0.35)" } : undefined}
             >
               <item.icon
                 size={20}
                 className={cn(
                   "flex-shrink-0 transition-colors",
-                  isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"
+                  isActive ? "" : "text-slate-500 group-hover:text-slate-300"
                 )}
+                style={isActive ? { color: "#C5A065" } : undefined}
               />
               {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
@@ -83,10 +86,10 @@ export function Sidebar() {
       </nav>
 
       {/* Collapse Button */}
-      <div className="p-3 border-t border-slate-700/50">
+      <div className="p-3 border-t border-white/10">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
         >
           {collapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} /><span>Collapse</span></>}
         </button>
