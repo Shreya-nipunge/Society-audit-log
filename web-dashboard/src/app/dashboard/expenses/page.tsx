@@ -6,29 +6,39 @@ import { formatCompact, formatDate, cn } from "@/lib/utils";
 import { Wallet, TrendingDown, PieChart as PieIcon, Search, Plus } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useState } from "react";
+import { ExpenseModal } from "@/components/ExpenseModal";
 
 const COLORS = ["#0F2040", "#1E3A66", "#C5A065", "#E5C48A", "#967635", "#0288D1", "#2E7D32"];
 
 export default function ExpensesPage() {
   const [search, setSearch] = useState("");
-  const totalExpenses = mockExpenses.reduce((s, e) => s + e.amount, 0);
+  const [expenses, setExpenses] = useState(mockExpenses);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
 
   const byCategory: Record<string, number> = {};
-  mockExpenses.forEach((e) => { byCategory[e.category] = (byCategory[e.category] || 0) + e.amount; });
+  expenses.forEach((e) => { byCategory[e.category] = (byCategory[e.category] || 0) + e.amount; });
   const pieData = Object.entries(byCategory).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
-  const filtered = mockExpenses
+  const filtered = expenses
     .filter((e) => !search || e.description.toLowerCase().includes(search.toLowerCase()) || e.vendor.toLowerCase().includes(search.toLowerCase()) || e.category.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime());
+
+  const handleAddExpense = async (expense: any) => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setExpenses(prev => [expense, ...prev]);
+  };
 
   return (
     <>
       <Header title="Expense Ledger" subtitle="Track and analyze society expenditures" />
       <div className="p-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <StatsCard title="Total Expenses" value={formatCompact(totalExpenses)} icon={Wallet} color="purple" subtitle={`${mockExpenses.length} entries`} />
+          <StatsCard title="Total Expenses" value={formatCompact(totalExpenses)} icon={Wallet} color="purple" subtitle={`${expenses.length} entries`} />
           <StatsCard title="Categories" value={`${Object.keys(byCategory).length}`} icon={PieIcon} color="blue" subtitle="Expense types" />
-          <StatsCard title="Avg. per Entry" value={formatCompact(totalExpenses / mockExpenses.length)} icon={TrendingDown} color="amber" subtitle="Average expense" />
+          <StatsCard title="Avg. per Entry" value={formatCompact(totalExpenses / (expenses.length || 1))} icon={TrendingDown} color="amber" subtitle="Average expense" />
         </div>
 
         {/* Charts */}
@@ -65,7 +75,7 @@ export default function ExpensesPage() {
             <Search size={16} style={{ color: "#636C7A" }} />
             <input type="text" placeholder="Search expenses..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent text-sm outline-none w-full placeholder:text-[#636C7A]" style={{ color: "#2C2F33" }} />
           </div>
-          <button className="flex items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ backgroundColor: "#0F2040" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E3A66")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0F2040")}>
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ backgroundColor: "#0F2040" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E3A66")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0F2040")}>
             <Plus size={16} /> Record Expense
           </button>
         </div>
@@ -103,6 +113,7 @@ export default function ExpensesPage() {
           </div>
         </div>
       </div>
+      <ExpenseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAddExpense} />
     </>
   );
 }

@@ -25,6 +25,32 @@ export default function TransactionsPage() {
     })
     .sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime());
 
+  const handleExport = () => {
+    const headers = ["Date", "Member Name", "Flat Number", "Mode", "Reference", "Recorded By", "Amount"];
+    const rows = filtered.map(tx => {
+      const member = mockUsers.find((u) => u.uid === tx.memberId);
+      return [
+        `"${formatDate(tx.paidAt)}"`,
+        `"${member?.name || tx.memberId}"`,
+        `"${member?.flatNumber || ""}"`,
+        `"${tx.paymentMode}"`,
+        `"${tx.referenceNumber}"`,
+        `"${mockUsers.find(u => u.uid === tx.recordedBy)?.name || tx.recordedBy}"`,
+        tx.amount
+      ];
+    });
+    
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transactions_export_${new Date().getTime()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       <Header title="Payment Transactions" subtitle={`${mockTransactions.length} transactions · ${formatCompact(totalAmount)} total`} />
@@ -34,7 +60,7 @@ export default function TransactionsPage() {
             <Search size={16} style={{ color: "#636C7A" }} />
             <input type="text" placeholder="Search by member, reference, mode..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent text-sm outline-none w-full placeholder:text-[#636C7A]" style={{ color: "#2C2F33" }} />
           </div>
-          <button className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ border: "1px solid #E0E2E7", color: "#2C2F33" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#F8F9FB")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}>
+          <button onClick={handleExport} className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ border: "1px solid #E0E2E7", color: "#2C2F33" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#F8F9FB")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}>
             <Download size={16} />
             Export
           </button>

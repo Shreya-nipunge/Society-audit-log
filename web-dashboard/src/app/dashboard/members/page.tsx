@@ -4,6 +4,7 @@ import { mockUsers } from "@/lib/mock-data";
 import { Search, Filter, UserPlus, MoreHorizontal, Mail, Phone, Home, Shield } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { MemberModal } from "@/components/MemberModal";
 
 const roleColors: Record<string, string> = {
   chairman: "bg-[#D32F2F]/10 text-[#D32F2F]",
@@ -15,8 +16,10 @@ const roleColors: Record<string, string> = {
 export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [users, setUsers] = useState(mockUsers);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filtered = mockUsers.filter((u) => {
+  const filtered = users.filter((u) => {
     const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.flatNumber.toLowerCase().includes(search.toLowerCase());
@@ -24,9 +27,15 @@ export default function MembersPage() {
     return matchesSearch && matchesRole;
   });
 
+  const handleAddMember = async (member: any) => {
+    // Simulate network delay for realistic feel
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setUsers(prev => [member, ...prev]);
+  };
+
   return (
     <>
-      <Header title="Member Management" subtitle={`${mockUsers.length} registered members`} />
+      <Header title="Member Management" subtitle={`${users.length} registered members`} />
       <div className="p-8">
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -55,7 +64,7 @@ export default function MembersPage() {
               ))}
             </div>
           </div>
-          <button className="flex items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ backgroundColor: "#0F2040" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E3A66")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0F2040")}>
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style={{ backgroundColor: "#0F2040" }} onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1E3A66")} onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#0F2040")}>
             <UserPlus size={16} />
             Add Member
           </button>
@@ -126,10 +135,11 @@ export default function MembersPage() {
             </table>
           </div>
           <div className="px-6 py-3 flex items-center justify-between" style={{ backgroundColor: "#F8F9FB", borderTop: "1px solid #E0E2E7" }}>
-            <p className="text-xs" style={{ color: "#636C7A" }}>Showing {filtered.length} of {mockUsers.length} members</p>
+            <p className="text-xs" style={{ color: "#636C7A" }}>Showing {filtered.length} of {users.length} members</p>
           </div>
         </div>
       </div>
+      <MemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleAddMember} />
     </>
   );
 }
