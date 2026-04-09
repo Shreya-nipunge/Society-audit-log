@@ -31,6 +31,25 @@ class UserModel {
   final String createdBy; // Kept local
   final DateTime createdAt;
 
+  // Ledger Data (B-O)
+  final double openingBalance;
+  final double sinkingFund;
+  final double maintenanceAmount;
+  final double municipalTax;
+  final double noc;
+  final double parkingCharges;
+  final double delayCharges;
+  final double buildingFund;
+  final double roomTransferFees;
+  final double totalReceivable;
+  final double totalReceived;
+  final double closingBalance;
+
+  // Charges Types (Q-S)
+  final double fixedMonthlyCharges;
+  final double annualCharges;
+  final double variableCharges;
+
   UserModel({
     required this.uid,
     required this.name,
@@ -42,6 +61,21 @@ class UserModel {
     required this.societyId,
     this.status = 'active',
     this.createdBy = 'System',
+    this.openingBalance = 0,
+    this.sinkingFund = 0,
+    this.maintenanceAmount = 0,
+    this.municipalTax = 0,
+    this.noc = 0,
+    this.parkingCharges = 0,
+    this.delayCharges = 0,
+    this.buildingFund = 0,
+    this.roomTransferFees = 0,
+    this.totalReceivable = 0,
+    this.totalReceived = 0,
+    this.closingBalance = 0,
+    this.fixedMonthlyCharges = 0,
+    this.annualCharges = 0,
+    this.variableCharges = 0,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -55,6 +89,21 @@ class UserModel {
       'role': role.name,
       'status': status,
       'createdAt': createdAt.toIso8601String(),
+      'openingBalance': openingBalance,
+      'sinkingFund': sinkingFund,
+      'maintenanceAmount': maintenanceAmount,
+      'municipalTax': municipalTax,
+      'noc': noc,
+      'parkingCharges': parkingCharges,
+      'delayCharges': delayCharges,
+      'buildingFund': buildingFund,
+      'roomTransferFees': roomTransferFees,
+      'totalReceivable': totalReceivable,
+      'totalReceived': totalReceived,
+      'closingBalance': closingBalance,
+      'fixedMonthlyCharges': fixedMonthlyCharges,
+      'annualCharges': annualCharges,
+      'variableCharges': variableCharges,
     };
   }
 
@@ -73,6 +122,21 @@ class UserModel {
       societyId: map['societyId'] ?? '',
       status: map['status'] ?? (map['isActive'] == true ? 'active' : 'inactive'),
       createdBy: map['createdBy'] ?? 'System',
+      openingBalance: (map['openingBalance'] ?? 0).toDouble(),
+      sinkingFund: (map['sinkingFund'] ?? 0).toDouble(),
+      maintenanceAmount: (map['maintenanceAmount'] ?? 0).toDouble(),
+      municipalTax: (map['municipalTax'] ?? 0).toDouble(),
+      noc: (map['noc'] ?? 0).toDouble(),
+      parkingCharges: (map['parkingCharges'] ?? 0).toDouble(),
+      delayCharges: (map['delayCharges'] ?? 0).toDouble(),
+      buildingFund: (map['buildingFund'] ?? 0).toDouble(),
+      roomTransferFees: (map['roomTransferFees'] ?? 0).toDouble(),
+      totalReceivable: (map['totalReceivable'] ?? 0).toDouble(),
+      totalReceived: (map['totalReceived'] ?? 0).toDouble(),
+      closingBalance: (map['closingBalance'] ?? 0).toDouble(),
+      fixedMonthlyCharges: (map['fixedMonthlyCharges'] ?? 0).toDouble(),
+      annualCharges: (map['annualCharges'] ?? 0).toDouble(),
+      variableCharges: (map['variableCharges'] ?? 0).toDouble(),
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
           : DateTime.now(),

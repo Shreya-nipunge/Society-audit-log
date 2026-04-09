@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
-import '../models/audit_log_model.dart';
-import '../services/audit_service.dart';
 import '../../admin/widgets/admin_drawer.dart';
+import '../../../core/utils/mock_data.dart';
+import '../../auth/models/user_model.dart';
+import '../../reports/services/report_export_service.dart';
 
 class AuditLogScreen extends StatefulWidget {
   const AuditLogScreen({super.key});
@@ -13,94 +14,72 @@ class AuditLogScreen extends StatefulWidget {
 }
 
 class _AuditLogScreenState extends State<AuditLogScreen> {
-  String _selectedCategory = 'All';
-  final List<String> _categories = [
-    'All',
-    'Members',
-    'Accounts',
-    'Payments',
-    'Expenses',
-    'Documents',
-    'Reports',
-  ];
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
-    final logs = AuditService.getLogsByFilter(_selectedCategory);
+    // Filter users by search query
+    final members = MockData.users.where((user) {
+      final query = _searchQuery.toLowerCase();
+      return user.name.toLowerCase().contains(query) ||
+             user.flatNumber.toLowerCase().contains(query) ||
+             user.email.toLowerCase().contains(query);
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Security Audit Logs'),
+        title: const Text('Member Ledgers (Audit)'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: 'Download Overall Ledger PDF',
+            onPressed: () => ReportExportService.generateOverallLedgerPDF(members),
+          ),
+          IconButton(
+            icon: const Icon(Icons.table_view),
+            tooltip: 'Download Overall Ledger Excel',
+            onPressed: () => ReportExportService.generateOverallLedgerExcel(members),
+          ),
+        ],
       ),
       drawer: const AdminDrawer(),
       body: Column(
         children: [
-          // Filter Bar
+          // Search Bar
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
-            child: Row(
-              children: [
-                const Text(
-                  'Filter:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search by Name, Flat, or Email...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _categories.map((cat) {
-                        final isSelected = _selectedCategory == cat;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(cat),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() => _selectedCategory = cat);
-                              }
-                            },
-                            selectedColor: AppColors.primary.withValues(
-                              alpha: 0.1,
-                            ),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ],
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              ),
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
 
-          // Log List
+          // Member Ledger List
           Expanded(
-            child: logs.isEmpty
+            child: members.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.history,
+                          Icons.person_off_outlined,
                           size: 64,
                           color: AppColors.textSecondary.withValues(alpha: 0.2),
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'No audit logs found',
+                          'No members found',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ],
@@ -108,10 +87,10 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: logs.length,
+                    itemCount: members.length,
                     itemBuilder: (context, index) {
-                      final log = logs[index];
-                      return _buildLogCard(log);
+                      final member = members[index];
+                      return _buildMemberLedgerCard(member);
                     },
                   ),
           ),
@@ -120,9 +99,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
     );
   }
 
-  Widget _buildLogCard(AuditLogModel log) {
-    final color = _getLogColor(log.actionType);
-
+  Widget _buildMemberLedgerCard(UserModel user) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -132,16 +109,16 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
       ),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.1),
-          child: Icon(_getLogIcon(log.actionType), color: color, size: 20),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+          child: const Icon(Icons.table_chart_outlined, color: AppColors.primary, size: 20),
         ),
         title: Text(
-          log.actionType.replaceAll('_', ' '),
+          user.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          'By ${log.performedBy} (${log.role.name}) • ${DateFormat('HH:mm, dd MMM').format(log.timestamp)}',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          'Flat: ${user.flatNumber} | Outstanding: ₹${NumberFormat('#,##,###').format(user.closingBalance)}',
+          style: const TextStyle(fontSize: 12, color: AppColors.error),
         ),
         children: [
           Padding(
@@ -149,15 +126,67 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Target', log.targetEntity),
-                if (log.oldValue != null)
-                  _buildInfoRow('Old Value', log.oldValue!),
-                if (log.newValue != null)
-                  _buildInfoRow('New Value', log.newValue!),
+                const Text(
+                  'SOCIETY LEDGER (B-O)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                ),
                 const SizedBox(height: 8),
-                Text(
-                  'Log ID: ${log.id}',
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildInfoRow('Opening Balance (1-Apr)', user.openingBalance),
+                      _buildInfoRow('Sinking Fund', user.sinkingFund),
+                      _buildInfoRow('Maintenance', user.maintenanceAmount),
+                      _buildInfoRow('Municipal Tax', user.municipalTax),
+                      _buildInfoRow('NOC', user.noc),
+                      _buildInfoRow('Parking Charges', user.parkingCharges),
+                      _buildInfoRow('Delay Charges', user.delayCharges),
+                      _buildInfoRow('Building Fund', user.buildingFund),
+                      _buildInfoRow('Room Transfer Fees', user.roomTransferFees),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Divider(color: AppColors.border),
+                      ),
+                      _buildInfoRow('Total Receivable', user.totalReceivable, isBold: true, color: AppColors.primary),
+                      _buildInfoRow('Total Received', user.totalReceived, isBold: true, color: Colors.green.shade700),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Divider(color: AppColors.border),
+                      ),
+                      _buildInfoRow('Closing Balance (31-Mar)', user.closingBalance, isBold: true, color: AppColors.error),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                const Text(
+                  'CHARGES TYPES (Q-S)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                     _buildChargeBox('Fixed Monthly', user.fixedMonthlyCharges, AppColors.primary),
+                     const SizedBox(width: 8),
+                     _buildChargeBox('Annual Fees', user.annualCharges, Colors.orange.shade700),
+                     const SizedBox(width: 8),
+                     _buildChargeBox('Variable', user.variableCharges, Colors.indigo.shade500),
+                  ],
                 ),
               ],
             ),
@@ -167,77 +196,67 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+  Widget _buildChargeBox(String label, double value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
-          ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              '₹${NumberFormat('#,##,###').format(value)}',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Color _getLogColor(String action) {
-    if (action.contains('ADD') || action.contains('CREATE')) {
-      return Colors.green;
-    }
-    if (action.contains('DELETE') || action.contains('DEACTIVATE')) {
-      return Colors.orange;
-    }
-    if (action.contains('REACTIVATE')) {
-      return const Color(0xFF2E7D32);
-    }
-    if (action.contains('EDIT')) {
-      return Colors.blue;
-    }
-    if (action.contains('RECORD') || action.contains('EXPENSE')) {
-      return AppColors.primary;
-    }
-    if (action.contains('PAYMENT') || action.contains('BILL')) {
-      return const Color(0xFF6366F1);
-    }
-    if (action.contains('IMPORT')) {
-      return const Color(0xFF0EA5E9);
-    }
-    return Colors.blueGrey;
-  }
-
-  IconData _getLogIcon(String action) {
-    if (action.contains('MEMBER') ||
-        action.contains('USER') ||
-        action.contains('ACCOUNT')) {
-      return Icons.person_outline;
-    }
-    if (action.contains('PAYMENT') || action.contains('BILL')) {
-      return Icons.receipt_long_outlined;
-    }
-    if (action.contains('EXPENSE')) {
-      return Icons.account_balance_wallet_outlined;
-    }
-    if (action.contains('REPORT')) {
-      return Icons.analytics_outlined;
-    }
-    if (action.contains('IMPORT')) {
-      return Icons.upload_file_outlined;
-    }
-    if (action.contains('DOCUMENT')) {
-      return Icons.description_outlined;
-    }
-    if (action.contains('DEACTIVATE')) {
-      return Icons.block_outlined;
-    }
-    if (action.contains('REACTIVATE')) {
-      return Icons.check_circle_outline;
-    }
-    return Icons.settings_outlined;
+  Widget _buildInfoRow(String label, double value, {bool isBold = false, Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          Text(
+            '₹${NumberFormat('#,##,###').format(value)}',
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

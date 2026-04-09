@@ -1,15 +1,39 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
-import { mockBills, mockTransactions, mockExpenses, mockUsers } from "@/lib/mock-data";
 import { formatCompact, cn } from "@/lib/utils";
-import { Download, FileText, TrendingUp, TrendingDown, Scale, Printer } from "lucide-react";
+import { Download, Printer, Scale } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { subscribeToBills, subscribeToTransactions, subscribeToExpenses, subscribeToMembers } from "@/lib/firestore-service";
+import type { User, Transaction, Expense, Bill } from "@/lib/types";
+
+import { useAuth } from "@/lib/auth";
 
 export default function ReportsPage() {
-  const totalCollected = mockTransactions.reduce((s, t) => s + t.amount, 0);
-  const totalBilled = mockBills.reduce((s, b) => s + b.totalAmount, 0);
-  const totalPending = totalBilled - totalCollected;
-  const totalExpenses = mockExpenses.reduce((s, e) => s + e.amount, 0);
+  const { user, loading: authLoading } = useAuth();
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (!user || authLoading) return;
+    const unsubBills = subscribeToBills(setBills);
+    const unsubTx = subscribeToTransactions(setTransactions);
+    const unsubExp = subscribeToExpenses(setExpenses);
+    const unsubUsers = subscribeToMembers(setUsers);
+    
+    return () => {
+      unsubBills();
+      unsubTx();
+      unsubExp();
+      unsubUsers();
+    };
+  }, [user, authLoading]);
+
+  const totalCollected = transactions.reduce((s, t) => s + t.amount, 0);
+  const totalBilled = bills.reduce((s, b) => s + b.totalAmount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const netBalance = totalCollected - totalExpenses;
 
   // Fund balances (simplified)
@@ -20,11 +44,11 @@ export default function ReportsPage() {
   ];
 
   // Member-wise summary
-  const memberSummary = mockUsers
+  const memberSummary = users
     .filter((u) => u.role === "member")
     .map((u) => {
-      const billed = mockBills.filter((b) => b.memberId === u.uid).reduce((s, b) => s + b.totalAmount, 0);
-      const paid = mockTransactions.filter((t) => t.memberId === u.uid).reduce((s, t) => s + t.amount, 0);
+      const billed = bills.filter((b) => b.memberId === u.uid).reduce((s, b) => s + b.totalAmount, 0);
+      const paid = transactions.filter((t) => t.memberId === u.uid).reduce((s, t) => s + t.amount, 0);
       return { name: u.name, flat: u.flatNumber, billed, paid, pending: billed - paid };
     });
 
@@ -40,10 +64,22 @@ export default function ReportsPage() {
       <div className="p-8 space-y-8 print:p-4">
         {/* Action Buttons */}
         <div className="flex gap-3 print:hidden">
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50">
+          <button 
+            onClick={() => window.print()} 
+            className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all" 
+            style={{ border: "1px solid #0F2040", color: "#0F2040" }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "#F8F9FB"; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "white"; }}
+          >
             <Printer size={16} /> Print Report
           </button>
-          <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700">
+          <button 
+            onClick={() => window.print()} 
+            className="flex items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm" 
+            style={{ backgroundColor: "#0F2040" }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "#1E3B6E"; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "#0F2040"; }}
+          >
             <Download size={16} /> Export PDF
           </button>
         </div>
@@ -51,8 +87,8 @@ export default function ReportsPage() {
         {/* Balance Sheet */}
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-6">
-            <Scale size={20} className="text-indigo-600" />
-            <h2 className="text-lg font-bold text-slate-800">Balance Sheet</h2>
+            <Scale size={20} style={{ color: "#C5A065" }} />
+            <h2 className="text-lg font-bold" style={{ color: "#0F2040" }}>Balance Sheet</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {incomeVsExpense.map((item) => (
@@ -74,7 +110,7 @@ export default function ReportsPage() {
                 <div key={f.fund} className="flex items-center gap-4">
                   <div className="w-40 text-sm font-medium text-slate-700">{f.fund}</div>
                   <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#C5A065" }} />
                   </div>
                   <div className="w-24 text-right text-sm font-bold text-slate-800">{formatCompact(f.balance)}</div>
                   <div className="w-12 text-right text-xs text-slate-400">{pct.toFixed(0)}%</div>
@@ -94,8 +130,8 @@ export default function ReportsPage() {
               <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`} />
               <Tooltip formatter={(v: any) => [`₹${Number(v).toLocaleString("en-IN")}`, ""]} />
               <Legend />
-              <Bar dataKey="income" name="Total Income" fill="#10b981" radius={[6, 6, 0, 0]} barSize={80} />
-              <Bar dataKey="expenses" name="Total Expenses" fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={80} />
+              <Bar dataKey="income" name="Total Income" fill="#2E7D32" radius={[6, 6, 0, 0]} barSize={80} />
+              <Bar dataKey="expenses" name="Total Expenses" fill="#C5A065" radius={[6, 6, 0, 0]} barSize={80} />
             </BarChart>
           </ResponsiveContainer>
         </div>

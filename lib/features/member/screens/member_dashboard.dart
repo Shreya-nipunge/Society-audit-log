@@ -138,11 +138,129 @@ class MemberDashboard extends StatelessWidget {
                       onTap: () => Navigator.pushNamed(
                         context,
                         '/notice-detail',
-                        arguments: notice.toMap(), // Pass map to detail screen assuming it still expects a map, or I can update detail screen later. Actually let me just pass notice.toMap() for now to avoid breaking it. Wait, I should probably check notice_detail_screen too!
+                        arguments: notice.toMap(),
                       ),
                     ),
                   ),
                 ),
+            
+            const SizedBox(height: 32),
+            
+            // --- NEW: Society Audit / Ledger Section ---
+            Text('Society Ledger (B-O)', style: AppTextStyles.h3),
+            const SizedBox(height: 12),
+            _buildSocietyLedger(user),
+            
+            const SizedBox(height: 32),
+            
+            // --- NEW: 3-column Charges Section ---
+            Text('Charges Types', style: AppTextStyles.h3),
+            const SizedBox(height: 12),
+            _buildChargesTypes(user),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocietyLedger(UserModel? user) {
+    if (user == null) return const SizedBox.shrink();
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        children: [
+          _buildLedgerRow('Opening Balance (1-Apr)', user.openingBalance),
+          _buildLedgerRow('Sinking Fund', user.sinkingFund),
+          _buildLedgerRow('Maintenance', user.maintenanceAmount),
+          _buildLedgerRow('Municipal Tax', user.municipalTax),
+          _buildLedgerRow('NOC', user.noc),
+          _buildLedgerRow('Parking Charges', user.parkingCharges),
+          _buildLedgerRow('Delay Charges', user.delayCharges),
+          _buildLedgerRow('Building Fund', user.buildingFund),
+          _buildLedgerRow('Room Transfer Fees', user.roomTransferFees),
+          const Divider(height: 24),
+          _buildLedgerRow('Total Receivable', user.totalReceivable, isBold: true, color: AppColors.primary),
+          _buildLedgerRow('Total Received', user.totalReceived, color: AppColors.success),
+          _buildLedgerRow('Closing Balance (31-Mar)', user.closingBalance, isBold: true, color: AppColors.error),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLedgerRow(String label, double value, {bool isBold = false, Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            '₹${NumberFormat('#,##,##0').format(value)}',
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChargesTypes(UserModel? user) {
+    if (user == null) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        _buildChargeColumn('Fixed Monthly', user.fixedMonthlyCharges, AppColors.primary),
+        const SizedBox(width: 12),
+        _buildChargeColumn('Annual Charges', user.annualCharges, AppColors.secondary),
+        const SizedBox(width: 12),
+        _buildChargeColumn('Variable Charges', user.variableCharges, const Color(0xFF6366F1)),
+      ],
+    );
+  }
+
+  Widget _buildChargeColumn(String label, double value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontSize: 10,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+                '₹${NumberFormat('#,##0').format(value)}',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

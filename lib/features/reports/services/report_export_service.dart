@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_strings.dart';
 import 'report_service.dart';
+import '../../auth/models/user_model.dart';
 
 class ReportExportService {
   static const PdfColor _primaryColor = PdfColors.indigo900;
@@ -294,5 +295,114 @@ class ReportExportService {
 
     final bytes = excel.encode();
     await _shareFile(bytes, 'Society_Financial_Report.xlsx');
+  }
+
+  static Future<void> generateOverallLedgerPDF(List<UserModel> users) async {
+    final pdf = pw.Document();
+
+    // PDF tables struggle to fit 15 columns even in landscape, so we will generate a concise multi-page overall ledger summary.
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4.landscape,
+        margin: const pw.EdgeInsets.all(30),
+        header: (_) => _buildHeader('Society Outstanding Matrix'),
+        footer: _buildFooter,
+        build: (context) {
+          return [
+            pw.TableHelper.fromTextArray(
+              headers: ['Flat', 'Member Name', 'Maintenance', 'Sinking Fund', 'M. Tax', 'Parking', 'Receivable', 'Paid', 'Outstanding'],
+              data: users.map((u) => [
+                u.flatNumber,
+                u.name,
+                NumberFormat('#,##,###').format(u.maintenanceAmount),
+                NumberFormat('#,##,###').format(u.sinkingFund),
+                NumberFormat('#,##,###').format(u.municipalTax),
+                NumberFormat('#,##,###').format(u.parkingCharges),
+                NumberFormat('#,##,###').format(u.totalReceivable),
+                NumberFormat('#,##,###').format(u.totalReceived),
+                NumberFormat('#,##,###').format(u.closingBalance),
+              ]).toList(),
+              headerStyle: pw.TextStyle(
+                color: PdfColors.white,
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 8),
+              headerDecoration: const pw.BoxDecoration(color: _primaryColor),
+              cellAlignments: {
+                0: pw.Alignment.center,
+                1: pw.Alignment.centerLeft,
+                2: pw.Alignment.centerRight,
+                3: pw.Alignment.centerRight,
+                4: pw.Alignment.centerRight,
+                5: pw.Alignment.centerRight,
+                6: pw.Alignment.centerRight,
+                7: pw.Alignment.centerRight,
+                8: pw.Alignment.centerRight,
+              },
+            ),
+          ];
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'Society_Overall_Ledger.pdf',
+    );
+  }
+
+  static Future<void> generateOverallLedgerExcel(List<UserModel> users) async {
+    final excel = Excel.createExcel();
+    final Sheet sheet = excel['Overall Ledger'];
+    excel.delete('Sheet1');
+
+    sheet.appendRow([TextCellValue('Society Audit Log - Complete Ledger Dump')]);
+    sheet.appendRow([TextCellValue('')]);
+
+    sheet.appendRow([
+      TextCellValue('Flat Number'),
+      TextCellValue('Member Name'),
+      TextCellValue('Opening Balance'),
+      TextCellValue('Sinking Fund'),
+      TextCellValue('Maintenance Amount'),
+      TextCellValue('Municipal Tax'),
+      TextCellValue('NOC'),
+      TextCellValue('Parking Charges'),
+      TextCellValue('Delay Charges'),
+      TextCellValue('Building Fund'),
+      TextCellValue('Room Transfer Fees'),
+      TextCellValue('Fixed Monthly Charges'),
+      TextCellValue('Annual Charges'),
+      TextCellValue('Variable Charges'),
+      TextCellValue('Total Receivable'),
+      TextCellValue('Total Received'),
+      TextCellValue('Closing Balance'),
+    ]);
+    
+    for (var u in users) {
+      sheet.appendRow([
+        TextCellValue(u.flatNumber),
+        TextCellValue(u.name),
+        DoubleCellValue(u.openingBalance),
+        DoubleCellValue(u.sinkingFund),
+        DoubleCellValue(u.maintenanceAmount),
+        DoubleCellValue(u.municipalTax),
+        DoubleCellValue(u.noc),
+        DoubleCellValue(u.parkingCharges),
+        DoubleCellValue(u.delayCharges),
+        DoubleCellValue(u.buildingFund),
+        DoubleCellValue(u.roomTransferFees),
+        DoubleCellValue(u.fixedMonthlyCharges),
+        DoubleCellValue(u.annualCharges),
+        DoubleCellValue(u.variableCharges),
+        DoubleCellValue(u.totalReceivable),
+        DoubleCellValue(u.totalReceived),
+        DoubleCellValue(u.closingBalance),
+      ]);
+    }
+
+    final bytes = excel.encode();
+    await _shareFile(bytes, 'Overall_Society_Ledger_${DateFormat('MMM_yyyy').format(DateTime.now())}.xlsx');
   }
 }

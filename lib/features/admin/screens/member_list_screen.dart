@@ -80,32 +80,32 @@ class _MemberListScreenState extends State<MemberListScreen>
     return users;
   }
 
-  void _deactivateMember(UserModel member) {
+  void _deleteMember(UserModel member) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
             const SizedBox(width: 8),
-            const Text('Deactivate Account'),
+            const Text('Delete Member'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Deactivate the account for ${member.name}?'),
+            Text('Permanently delete ${member.name}?'),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.08),
+                color: Colors.red.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
-                'This will prevent login but preserves all data and audit history. This action can be reversed.',
+                'This will instantly prevent the member from logging into the mobile application.',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ),
@@ -118,50 +118,31 @@ class _MemberListScreenState extends State<MemberListScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              final updated = member.copyWith(status: 'inactive');
+              final updated = member.copyWith(status: 'deleted');
               MockData.updateUser(updated);
               AuditService.logAction(
-                actionType: 'DEACTIVATE_USER',
+                actionType: 'DELETE_USER',
                 targetEntity: member.name,
                 oldValue: 'Active',
-                newValue: 'Deactivated — Flat: ${member.flatNumber}',
+                newValue: 'Deleted — Flat: ${member.flatNumber}',
               );
               Navigator.pop(ctx);
               _refreshMembers();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${member.name} has been deactivated'),
-                  backgroundColor: Colors.orange,
+                  content: Text('${member.name} has been deleted'),
+                  backgroundColor: Colors.red,
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Deactivate'),
+            child: const Text('Delete'),
           ),
         ],
-      ),
-    );
-  }
-
-  void _reactivateMember(UserModel member) {
-    final updated = member.copyWith(status: 'active');
-    MockData.updateUser(updated);
-    AuditService.logAction(
-      actionType: 'REACTIVATE_USER',
-      targetEntity: member.name,
-      oldValue: 'Deactivated',
-      newValue: 'Active — Flat: ${member.flatNumber}',
-    );
-    _refreshMembers();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${member.name} has been reactivated'),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -384,7 +365,7 @@ class _MemberListScreenState extends State<MemberListScreen>
                           ),
                         ),
                       ),
-                      if (isInactive) ...[
+                      if (member.status.toLowerCase() == 'deleted') ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -392,15 +373,15 @@ class _MemberListScreenState extends State<MemberListScreen>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
-                            'Inactive',
+                            'Deleted',
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: Colors.orange,
+                              color: Colors.red,
                             ),
                           ),
                         ),
@@ -480,11 +461,8 @@ class _MemberListScreenState extends State<MemberListScreen>
                       );
                       if (result == true) _refreshMembers();
                       break;
-                    case 'deactivate':
-                      _deactivateMember(member);
-                      break;
-                    case 'reactivate':
-                      _reactivateMember(member);
+                    case 'delete':
+                      _deleteMember(member);
                       break;
                   }
                 },
@@ -503,38 +481,20 @@ class _MemberListScreenState extends State<MemberListScreen>
                       ],
                     ),
                   ),
-                  if (isChairman && member.isActive)
+                  if (canEdit && member.status.toLowerCase() != 'deleted')
                     const PopupMenuItem(
-                      value: 'deactivate',
+                      value: 'delete',
                       child: Row(
                         children: [
                           Icon(
-                            Icons.block_outlined,
+                            Icons.delete_outline,
                             size: 18,
-                            color: Colors.orange,
+                            color: Colors.red,
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Deactivate',
-                            style: TextStyle(color: Colors.orange),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (isChairman && !member.isActive)
-                    const PopupMenuItem(
-                      value: 'reactivate',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                            color: Colors.green,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Reactivate',
-                            style: TextStyle(color: Colors.green),
+                            'Delete',
+                            style: TextStyle(color: Colors.red),
                           ),
                         ],
                       ),

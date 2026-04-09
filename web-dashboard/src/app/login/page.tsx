@@ -65,7 +65,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@society.com"
+                    placeholder="chairman@society.com"
                     className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all placeholder:text-[#636C7A]"
                     style={{ backgroundColor: "#F8F9FB", border: "1.5px solid #E0E2E7", color: "#0F2040" }}
                     onFocus={(e) => { e.target.style.borderColor = "#0F2040"; e.target.style.boxShadow = "0 0 0 3px rgba(15,32,64,0.08)"; }}

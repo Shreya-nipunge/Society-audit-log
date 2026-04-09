@@ -1,15 +1,18 @@
 import 'package:flutter/foundation.dart';
 import '../../features/auth/models/user_model.dart';
 import '../../features/payments/models/transaction_model.dart';
-import '../../features/payments/models/fund_allocation.dart';
 import '../../features/billing/models/demand_notice_model.dart';
 import '../../features/billing/models/bill_model.dart';
 import '../../features/audit/models/document_model.dart';
 import '../../features/audit/models/expense_model.dart';
 import '../../features/complaints/models/complaint_model.dart';
+import '../services/firestore_service.dart';
 import '../../features/notices/models/notice_model.dart';
+import 'real_society_data.dart';
 
 class MockData {
+  static final FirestoreService _firestore = FirestoreService();
+
   // Use a modifiable list to support CRUD in the mock environment
   static Map<String, double> allocationRatios = {
     'Maintenance': 0.70,
@@ -17,94 +20,72 @@ class MockData {
     'Repairs Fund': 0.10,
   };
 
-  static List<UserModel> users = [
-    UserModel(
-      uid: 'admin_1',
-      name: 'John Chairman',
-      email: 'chairman@society.com',
-      password: '123456',
-      phone: '9876543210',
-      flatNumber: 'A-001',
-      role: UserRole.chairman,
-      societyId: 'society_123',
-      createdBy: 'System',
-    ),
-    UserModel(
-      uid: 'admin_2',
-      name: 'Alice Secretary',
-      email: 'secretary@society.com',
-      password: '123456',
-      phone: '9876543211',
-      flatNumber: 'A-002',
-      role: UserRole.secretary,
-      societyId: 'society_123',
-      createdBy: 'System',
-    ),
-    UserModel(
-      uid: 'admin_3',
-      name: 'Bob Treasurer',
-      email: 'treasurer@society.com',
-      password: '123456',
-      phone: '9876543212',
-      flatNumber: 'A-003',
-      role: UserRole.treasurer,
-      societyId: 'society_123',
-      createdBy: 'System',
-    ),
-    UserModel(uid: 'member_1', name: 'Rajesh Sharma', email: 'rajesh.sharma@gmail.com', password: '123456', phone: '9823456701', flatNumber: 'A-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_2', name: 'Priya Mehta', email: 'priya.mehta@gmail.com', password: '123456', phone: '9823456702', flatNumber: 'A-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-    UserModel(uid: 'member_3', name: 'Suresh Patil', email: 'suresh.patil@gmail.com', password: '123456', phone: '9823456703', flatNumber: 'A-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-    UserModel(uid: 'member_4', name: 'Anita Desai', email: 'anita.desai@gmail.com', password: '123456', phone: '9823456704', flatNumber: 'A-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_5', name: 'Vikram Joshi', email: 'vikram.joshi@gmail.com', password: '123456', phone: '9823456705', flatNumber: 'B-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_6', name: 'Kavita Nair', email: 'kavita.nair@gmail.com', password: '123456', phone: '9823456706', flatNumber: 'B-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-    UserModel(uid: 'member_7', name: 'Amit Kulkarni', email: 'amit.kulkarni@gmail.com', password: '123456', phone: '9823456707', flatNumber: 'B-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_8', name: 'Sunita Rao', email: 'sunita.rao@gmail.com', password: '123456', phone: '9823456708', flatNumber: 'B-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-    UserModel(uid: 'member_9', name: 'Deepak Verma', email: 'deepak.verma@gmail.com', password: '123456', phone: '9823456709', flatNumber: 'C-101', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_10', name: 'Pooja Iyer', email: 'pooja.iyer@gmail.com', password: '123456', phone: '9823456710', flatNumber: 'C-102', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-    UserModel(uid: 'member_11', name: 'Rahul Gupta', email: 'rahul.gupta@gmail.com', password: '123456', phone: '9823456711', flatNumber: 'C-103', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_1'),
-    UserModel(uid: 'member_12', name: 'Meena Pillai', email: 'meena.pillai@gmail.com', password: '123456', phone: '9823456712', flatNumber: 'C-104', role: UserRole.member, societyId: 'society_123', createdBy: 'admin_2'),
-  ];
+  static List<UserModel> users = RealSocietyData.users.map((m) => UserModel.fromMap(m)).toList();
+  static List<TransactionModel> transactions = [];
+  static List<DemandNoticeModel> demandNotices = [];
+  static List<BillModel> bills = [];
+  static List<ExpenseModel> expenses = [];
+  static List<NoticeModel> notices = [];
 
-  static List<TransactionModel> transactions = [
-    TransactionModel(
-      id: 'tx_seed_1',
-      memberId: 'member_1',
-      memberName: 'Member One',
-      flatNo: 'A-101',
-      amount: 4500.0,
-      paymentMethod: 'UPI',
-      referenceId: 'upi_123456789',
-      date: DateTime.now().subtract(const Duration(days: 45)),
-      transactionType: 'Maintenance',
-      status: 'Success',
-      allocation: FundAllocation(
-        maintenance: 3000,
-        sinkingFund: 500,
-        repairsFund: 500,
-        waterCharges: 500,
-      ),
-      receiptNo: 'SAL/25/0001',
-      recordedBy: 'admin_3',
-      recordedAt: DateTime.now().subtract(const Duration(days: 45)),
-    ),
-  ];
+  static void syncWithFirestore() {
+    _firestore.getMembers().listen((updatedUsers) {
+      users = updatedUsers.map((u) {
+        final orig = RealSocietyData.users.firstWhere(
+            (r) => r['uid'] == u.uid || r['uid'] == u.uid.replaceFirst('web_', ''), 
+            orElse: () => <String, dynamic>{});
+            
+        final Map<String, dynamic> merged = Map<String, dynamic>.from(orig);
+        merged['uid'] = u.uid;
+        merged['name'] = u.name;
+        merged['email'] = u.email;
+        merged['role'] = u.role.name;
+        merged['status'] = u.status;
+        merged['password'] = orig['password'] ?? '123456';
+        
+        return UserModel.fromMap(merged);
+      }).toList();
+      
+      final defaultAdmins = RealSocietyData.users
+          .where((u) => u['uid'].startsWith('admin_'))
+          .map((m) => UserModel.fromMap(m))
+          .toList();
+          
+      users = [...defaultAdmins, ...users];
+      
+      debugPrint('SYNC: Updated ${users.length} members with correctly populated financial data');
+    });
 
-  static List<DemandNoticeModel> demandNotices = [
-    // Seed one previous demand notice for member_1 to match tx_seed_1
-    DemandNoticeModel(
-      id: 'dn_seed_1',
-      memberId: 'member_1',
-      month: 'January',
-      year: 2025,
-      maintenance: 3000,
-      waterCharges: 500,
-      otherCharges: 1000,
-      dueDate: DateTime(2025, 1, 25),
-      generatedAt: DateTime(2025, 1, 1),
-    ),
-  ];
+    _firestore.getTransactions().listen((updatedTx) {
+      transactions = updatedTx;
+      debugPrint('SYNC: Updated ${transactions.length} transactions');
+    });
 
-  static List<BillModel> bills = []; // New bill storage
+    _firestore.getDemandNotices().listen((updatedBills) {
+      demandNotices = updatedBills;
+      debugPrint('SYNC: Updated ${demandNotices.length} bills');
+    });
+
+    _firestore.getExpenses().listen((updatedExp) {
+      expenses = updatedExp;
+      debugPrint('SYNC: Updated ${expenses.length} expenses');
+    });
+
+    _firestore.getNotices().listen((updatedNotices) {
+      notices = updatedNotices.map((n) => NoticeModel(
+        id: n['id'] ?? '',
+        title: n['title'] ?? '',
+        body: n['body'] ?? '',
+        author: n['postedBy'] ?? '',
+        date: (n['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
+        status: n['status'] ?? 'Published',
+      )).toList();
+      debugPrint('SYNC: Updated ${notices.length} notices');
+    });
+  }
+
+
+
+
 
   // --- Complaints ---
   static List<ComplaintModel> complaints = [
@@ -128,95 +109,7 @@ class MockData {
   ];
 
   // Expenses
-  static List<ExpenseModel> expenses = [
-    ExpenseModel(
-      id: 'EXP-001',
-      category: ExpenseCategory.electricityBill,
-      description: 'Common area electricity bill for January 2025',
-      amount: 8500,
-      date: DateTime(2025, 1, 15),
-      paymentMode: ExpensePaymentMode.bankTransfer,
-      vendorName: 'MSEDCL',
-      referenceNumber: 'ELEC-2025-001',
-      fundAllocation: FundType.maintenance,
-      approvalAuthority: ApprovalAuthority.treasurer,
-      recordedBy: 'Alice Secretary',
-      verifiedBy: 'Bob Treasurer',
-      auditTrailId: 'AUD-001',
-      timestamp: DateTime(2025, 1, 15, 10, 30),
-    ),
-    ExpenseModel(
-      id: 'EXP-002',
-      category: ExpenseCategory.plumbingWork,
-      subCategory: 'Pipe Leakage',
-      description: 'Underground water tank repair and pipe leakage fix',
-      location: 'Common Area - Basement',
-      amount: 12000,
-      date: DateTime(2025, 1, 20),
-      paymentMode: ExpensePaymentMode.cash,
-      vendorName: 'Sharma Plumbing Services',
-      vendorContact: '9876543210',
-      fundAllocation: FundType.repair,
-      approvalAuthority: ApprovalAuthority.secretary,
-      recordedBy: 'Alice Secretary',
-      auditTrailId: 'AUD-002',
-      timestamp: DateTime(2025, 1, 20, 14, 0),
-    ),
-    ExpenseModel(
-      id: 'EXP-003',
-      category: ExpenseCategory.securityServices,
-      subCategory: 'Monthly Salary',
-      description: 'Security guard salary for January 2025',
-      amount: 15000,
-      date: DateTime(2025, 1, 31),
-      paymentMode: ExpensePaymentMode.upi,
-      vendorName: 'Rajesh Kumar (Watchman)',
-      referenceNumber: 'UPI-20250131-789',
-      fundAllocation: FundType.maintenance,
-      approvalAuthority: ApprovalAuthority.chairman,
-      recordedBy: 'Bob Treasurer',
-      verifiedBy: 'Alice Secretary',
-      approvedBy: 'Charlie Chairman',
-      auditTrailId: 'AUD-003',
-      timestamp: DateTime(2025, 1, 31, 18, 0),
-    ),
-    ExpenseModel(
-      id: 'EXP-004',
-      category: ExpenseCategory.pestControl,
-      subCategory: 'Quarterly Treatment',
-      description: 'Quarterly pest control treatment for all floors',
-      amount: 6500,
-      taxAmount: 1170,
-      date: DateTime(2025, 2, 5),
-      paymentMode: ExpensePaymentMode.cheque,
-      vendorName: 'PestFree Solutions Pvt Ltd',
-      invoiceNumber: 'PFS-2025-089',
-      referenceNumber: 'CHQ-445566',
-      fundAllocation: FundType.maintenance,
-      recordedBy: 'Alice Secretary',
-      auditTrailId: 'AUD-004',
-      timestamp: DateTime(2025, 2, 5, 11, 0),
-    ),
-    ExpenseModel(
-      id: 'EXP-005',
-      category: ExpenseCategory.liftMaintenance,
-      subCategory: 'Annual Contract',
-      description: 'Lift AMC payment Q1 2025 - 2 lifts',
-      amount: 25000,
-      taxAmount: 4500,
-      date: DateTime(2025, 2, 10),
-      paymentMode: ExpensePaymentMode.bankTransfer,
-      vendorName: 'ThyssenKrupp Elevator India',
-      invoiceNumber: 'TKE-INV-4521',
-      fundAllocation: FundType.sinking,
-      approvalAuthority: ApprovalAuthority.chairman,
-      recordedBy: 'Alice Secretary',
-      verifiedBy: 'Bob Treasurer',
-      approvedBy: 'Charlie Chairman',
-      auditTrailId: 'AUD-005',
-      timestamp: DateTime(2025, 2, 10, 9, 0),
-    ),
-  ];
+
 
   static UserModel? login(String email, String password) {
     debugPrint('MOCK_AUTH: Checking Email: "$email"');
@@ -385,51 +278,7 @@ class MockData {
     };
   }
 
-  static List<NoticeModel> notices = [
-    NoticeModel(
-      id: '1',
-      title: 'Annual General Meeting',
-      date: DateTime(2026, 3, 25),
-      status: 'Published',
-      body:
-          'The Annual General Meeting of the society will be held on 25th March 2026 at the Society Clubhouse. All members are requested to attend.\n\nAgenda:\n1. Minutes of previous meeting.\n2. Approval of financial statements.\n3. Election of committee members.',
-      author: 'Secretary',
-    ),
-    NoticeModel(
-      id: 'd1',
-      title: 'Republic Day Celebration (Draft)',
-      date: DateTime(2026, 1, 26),
-      status: 'Draft',
-      body: 'Flag hoisting ceremony will be held at 9 AM in the main ground.',
-      author: 'Chairman',
-    ),
-    NoticeModel(
-      id: 'd2',
-      title: 'Lift Painting Schedule',
-      date: DateTime(2026, 3, 10),
-      status: 'Draft',
-      body: 'Lifts will be painted on 10th and 11th March. Please use stairs.',
-      author: 'Maintenance Manager',
-    ),
-    NoticeModel(
-      id: '2',
-      title: 'Water Supply Maintenance',
-      date: DateTime(2026, 2, 22),
-      status: 'Published',
-      body:
-          'The water supply will be suspended on 22nd February 2026 from 10:00 AM to 4:00 PM for cleaning and maintenance of the overhead tanks.\n\nPlease store sufficient water for your daily needs.',
-      author: 'Secretary',
-    ),
-    NoticeModel(
-      id: '3',
-      title: 'Security Drill Notification',
-      date: DateTime(2026, 3, 5),
-      status: 'Published',
-      body:
-          'A fire safety drill is scheduled for 5th March 2026 at 11:00 AM. This drill is mandatory for all residents to understand the evacuation protocol. Please gather near the main gate upon hearing the alarm.',
-      author: 'Security Chief',
-    ),
-  ];
+
   static void addNotice(NoticeModel notice) {
     notices.insert(0, notice);
   }

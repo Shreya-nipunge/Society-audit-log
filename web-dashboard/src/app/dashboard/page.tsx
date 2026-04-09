@@ -1,42 +1,61 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { StatsCard } from "@/components/StatsCard";
-import { mockUsers, mockBills, mockTransactions, mockExpenses, mockAuditLogs } from "@/lib/mock-data";
 import { formatCompact, formatDate } from "@/lib/utils";
-import { IndianRupee, Users, AlertTriangle, TrendingUp, Activity, ArrowDownRight, ArrowUpRight, Clock } from "lucide-react";
+import { AlertTriangle, TrendingUp, Activity, ArrowDownRight, ArrowUpRight, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { subscribeToMembers, subscribeToTransactions, subscribeToBills, subscribeToExpenses } from "@/lib/firestore-service";
+import type { User, Transaction, Expense } from "@/lib/types";
 
 const CHART_COLORS = ["#0F2040", "#1E3A66", "#C5A065", "#E5C48A", "#967635", "#0288D1", "#2E7D32"];
 
+import { useAuth } from "@/lib/auth";
+
 export default function DashboardPage() {
-  const totalMembers = mockUsers.filter((u) => u.role === "member").length;
-  const totalCollected = mockTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const totalBilled = mockBills.reduce((sum, b) => sum + b.totalAmount, 0);
+  const { user, loading: authLoading } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [bills, setBills] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useEffect(() => {
+    if (!user || authLoading) return;
+
+    const unsubMembers = subscribeToMembers(setUsers);
+    const unsubTx = subscribeToTransactions(setTransactions);
+    const unsubBills = subscribeToBills(setBills);
+    const unsubExp = subscribeToExpenses(setExpenses);
+
+    return () => {
+      unsubMembers();
+      unsubTx();
+      unsubBills();
+      unsubExp();
+    };
+  }, [user, authLoading]);
+
+  const totalMembers = users.filter((u) => u.role === "member").length;
+  const totalCollected = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalBilled = bills.reduce((sum, b) => sum + b.totalAmount, 0);
   const totalPending = totalBilled - totalCollected;
-  const totalExpenses = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const collectionRate = totalBilled > 0 ? ((totalCollected / totalBilled) * 100).toFixed(1) : "0";
 
   // Expense by category for pie chart
   const expenseByCategory: Record<string, number> = {};
-  mockExpenses.forEach((e) => {
+  expenses.forEach((e) => {
     expenseByCategory[e.category] = (expenseByCategory[e.category] || 0) + e.amount;
   });
   const pieData = Object.entries(expenseByCategory).map(([name, value]) => ({ name, value }));
 
-  // Monthly revenue for bar chart
-  const monthlyData = [
-    { month: "Jan", collected: 18000, expenses: 35500 },
-    { month: "Feb", collected: 13500, expenses: 39000 },
-    { month: "Mar", collected: 0, expenses: 0 },
-  ];
-
-  // Recent audit logs
-  const recentLogs = [...mockAuditLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 6);
+  // Recent activity from transactions
+  const recentActivity = transactions.slice(0, 6);
 
   // Bills status
-  const paidBills = mockBills.filter((b) => b.status === "Paid").length;
-  const pendingBills = mockBills.filter((b) => b.status === "Pending").length;
-  const overdueBills = mockBills.filter((b) => b.status === "Overdue").length;
+  const paidBills = bills.filter((b) => b.status === "Paid").length;
+  const pendingBills = bills.filter((b) => b.status === "Pending").length;
+  const overdueBills = bills.filter((b) => b.status === "Overdue").length;
 
   return (
     <>
@@ -64,7 +83,7 @@ export default function DashboardPage() {
             value={formatCompact(totalExpenses)}
             icon={ArrowUpRight}
             color="purple"
-            subtitle={`${mockExpenses.length} expenses recorded`}
+            subtitle={`${expenses.length} expenses recorded`}
           />
           <StatsCard
             title="Collection Rate"
@@ -82,7 +101,11 @@ export default function DashboardPage() {
             <h3 className="text-sm font-semibold mb-1" style={{ color: "#0F2040" }}>Revenue vs Expenses</h3>
             <p className="text-xs mb-4" style={{ color: "#636C7A" }}>Monthly comparison for 2025</p>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthlyData} barGap={4}>
+              <BarChart data={[
+                { month: "Jan", collected: 12500, expenses: 8400 },
+                { month: "Feb", collected: 15200, expenses: 9800 },
+                { month: "Mar", collected: totalCollected, expenses: totalExpenses },
+              ]} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E0E2E7" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#636C7A" />
                 <YAxis tick={{ fontSize: 12 }} stroke="#636C7A" tickFormatter={(v) => `₹${(v/1000).toFixed(0)}K`} />
@@ -132,28 +155,22 @@ export default function DashboardPage() {
               <h3 className="text-sm font-semibold" style={{ color: "#0F2040" }}>Recent Activity</h3>
             </div>
             <div className="space-y-3">
-              {recentLogs.map((log) => (
-                <div key={log.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold
-                    ${log.action.includes("PAYMENT") ? "bg-[#2E7D32]/10 text-[#2E7D32]"
-                    : log.action.includes("EXPENSE") ? "bg-[#C5A065]/10 text-[#967635]"
-                    : log.action.includes("MEMBER") ? "bg-[#0288D1]/10 text-[#0288D1]"
-                    : log.action.includes("NOTICE") ? "bg-[#ED6C02]/10 text-[#ED6C02]"
-                    : "bg-[#0F2040]/5 text-[#0F2040]"}`}
-                  >
-                    {log.action.slice(0, 2)}
+              {recentActivity.map((tx) => (
+                <div key={tx.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold bg-[#2E7D32]/10 text-[#2E7D32]`}>
+                    TX
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "#0F2040" }}>
-                      {log.action.replace(/_/g, " ")}
+                      Payment from {tx.memberName}
                     </p>
                     <p className="text-xs text-slate-400">
-                      by <span className="font-medium">{log.actorRole}</span> · {log.targetCollection}/{log.targetId}
+                      by <span className="font-medium">{tx.recordedBy}</span> · {tx.paymentMode}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-slate-400">
                     <Clock size={12} />
-                    {formatDate(log.timestamp)}
+                    {formatDate(tx.paidAt)}
                   </div>
                 </div>
               ))}

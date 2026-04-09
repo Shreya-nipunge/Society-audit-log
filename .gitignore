@@ -47,3 +47,6 @@ app.*.map.json
 # Sensitive Data
 .env
 android/app/google-services.json
+**/serviceAccount.json
+web-dashboard/parsed_members_utf8.json
+web-dashboard/fix_roles.js

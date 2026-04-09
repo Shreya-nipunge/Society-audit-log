@@ -7,7 +7,27 @@ export interface User {
   flatNumber: string;
   role: "chairman" | "secretary" | "treasurer" | "member";
   status: string;
+  password?: string;
   createdAt: string | Date;
+
+  // Ledger Data (B-O)
+  openingBalance: number;
+  sinkingFund: number;
+  maintenanceAmount: number;
+  municipalTax: number;
+  noc: number;
+  parkingCharges: number;
+  delayCharges: number;
+  buildingFund: number;
+  roomTransferFees: number;
+  totalReceivable: number;
+  totalReceived: number;
+  closingBalance: number;
+
+  // Charges Types (Q-S)
+  fixedMonthlyCharges: number;
+  annualCharges: number;
+  variableCharges: number;
 }
 
 export interface Bill {
@@ -28,11 +48,12 @@ export interface Bill {
 export interface Transaction {
   id: string;
   memberId: string;
-  billId: string;
+  memberName: string;
+  billId?: string;
   amount: number;
   paymentMode: string;
   referenceNumber: string;
-  receiptUrl: string;
+  receiptUrl?: string;
   recordedBy: string;
   paidAt: string | Date;
 }

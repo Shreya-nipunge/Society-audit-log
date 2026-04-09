@@ -9,7 +9,6 @@ import {
   CreditCard,
   Wallet,
   FileText,
-  ClipboardList,
   Bell,
   FolderOpen,
   ChevronLeft,
@@ -25,9 +24,7 @@ const navItems = [
   { label: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
   { label: "Expenses", href: "/dashboard/expenses", icon: Wallet },
   { label: "Reports", href: "/dashboard/reports", icon: FileText },
-  { label: "Audit Logs", href: "/dashboard/audit-logs", icon: ClipboardList },
   { label: "Notices", href: "/dashboard/notices", icon: Bell },
-  { label: "Documents", href: "/dashboard/documents", icon: FolderOpen },
 ];
 
 export function Sidebar() {
@@ -37,7 +34,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen text-white transition-all duration-300 flex flex-col",
+        "fixed left-0 top-0 z-40 h-screen text-white transition-all duration-300 flex flex-col print:hidden",
         collapsed ? "w-[72px]" : "w-64"
       )}
       style={{ background: "linear-gradient(180deg, #0F2040 0%, #071228 100%)" }}

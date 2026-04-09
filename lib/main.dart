@@ -37,6 +37,7 @@ import 'features/auth/models/user_model.dart';
 import 'features/notices/models/notice_model.dart';
 import 'core/guards/role_guard.dart';
 import 'core/widgets/error_boundary.dart';
+import 'core/utils/mock_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,9 @@ void main() async {
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
   }
+
+  // Initialize sync AFTER Firebase is initialized
+  MockData.syncWithFirestore();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

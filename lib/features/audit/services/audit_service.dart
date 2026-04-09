@@ -4,35 +4,7 @@ import '../../auth/models/user_model.dart';
 import '../models/audit_log_model.dart';
 
 class AuditService {
-  static final List<AuditLogModel> _auditLogs = [
-    AuditLogModel(
-      id: 'aud_1',
-      actionType: 'MEMBER_CREATE',
-      performedBy: 'John Chairman',
-      role: UserRole.chairman,
-      targetEntity: 'Rajesh Sharma',
-      newValue: 'Flat A-101',
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    AuditLogModel(
-      id: 'aud_2',
-      actionType: 'PAYMENT_RECORD',
-      performedBy: 'Bob Treasurer',
-      role: UserRole.treasurer,
-      targetEntity: 'Member One',
-      newValue: '₹4500 (UPI)',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    AuditLogModel(
-      id: 'aud_3',
-      actionType: 'BILL_GENERATE',
-      performedBy: 'Alice Secretary',
-      role: UserRole.secretary,
-      targetEntity: 'All Members',
-      newValue: 'January 2025 Bills',
-      timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-    ),
-  ];
+  static final List<AuditLogModel> _auditLogs = [];
 
   static List<AuditLogModel> get auditLogs => List.unmodifiable(_auditLogs);
 

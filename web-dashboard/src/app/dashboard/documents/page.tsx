@@ -1,9 +1,10 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
-import { mockDocuments } from "@/lib/mock-data";
 import { formatDate, cn } from "@/lib/utils";
-import { FileText, Upload, Download, Search, FolderOpen, File, Image } from "lucide-react";
-import { useState } from "react";
+import { FileText, Upload, Download, Search, FolderOpen, File } from "lucide-react";
+import { subscribeToDocuments } from "@/lib/firestore-service";
+import { SocietyDocument } from "@/lib/types";
 
 const categoryColors: Record<string, string> = {
   "AGM Minutes": "bg-orange-50 text-orange-600",
@@ -21,13 +22,23 @@ const categoryIcons: Record<string, typeof FileText> = {
   "Receipts": File,
 };
 
+import { useAuth } from "@/lib/auth";
+
 export default function DocumentsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
+  const [documents, setDocuments] = useState<SocietyDocument[]>([]);
 
-  const categories = ["All", ...Array.from(new Set(mockDocuments.map((d) => d.category)))];
+  useEffect(() => {
+    if (!user || authLoading) return;
+    const unsub = subscribeToDocuments(setDocuments);
+    return () => unsub();
+  }, [user, authLoading]);
 
-  const filtered = mockDocuments.filter((d) => {
+  const categories = ["All", ...Array.from(new Set(documents.map((d) => d.category)))];
+
+  const filtered = documents.filter((d) => {
     const matchSearch = !search || d.fileName.toLowerCase().includes(search.toLowerCase()) || d.category.toLowerCase().includes(search.toLowerCase());
     const matchCat = catFilter === "All" || d.category === catFilter;
     return matchSearch && matchCat;

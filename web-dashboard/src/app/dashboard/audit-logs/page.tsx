@@ -1,9 +1,10 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
-import { mockAuditLogs, mockUsers } from "@/lib/mock-data";
 import { formatDateTime, cn } from "@/lib/utils";
 import { Search, Filter, UserCheck, CreditCard, Wallet, FileText, Bell, Upload, UserMinus, Edit } from "lucide-react";
-import { useState } from "react";
+import { subscribeToAuditLogs, subscribeToMembers } from "@/lib/firestore-service";
+import { AuditLog, User } from "@/lib/types";
 
 const actionConfig: Record<string, { color: string; icon: typeof UserCheck; label: string }> = {
   ADD_MEMBER: { color: "bg-blue-50 text-blue-600", icon: UserCheck, label: "Member Added" },
@@ -16,15 +17,30 @@ const actionConfig: Record<string, { color: string; icon: typeof UserCheck; labe
   UPLOAD_DOCUMENT: { color: "bg-teal-50 text-teal-600", icon: Upload, label: "Document Uploaded" },
 };
 
+import { useAuth } from "@/lib/auth";
+
 export default function AuditLogsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
-  const actions = Array.from(new Set(mockAuditLogs.map((l) => l.action)));
+  useEffect(() => {
+    if (!user || authLoading) return;
+    const unsubLogs = subscribeToAuditLogs(setLogs);
+    const unsubUsers = subscribeToMembers(setUsers);
+    return () => {
+      unsubLogs();
+      unsubUsers();
+    };
+  }, [user, authLoading]);
 
-  const filtered = mockAuditLogs
+  const actions = Array.from(new Set(logs.map((l) => l.action)));
+
+  const filtered = logs
     .filter((l) => {
-      const actor = mockUsers.find((u) => u.uid === l.actorId);
+      const actor = users.find((u) => u.uid === l.actorId);
       const matchSearch = !search ||
         l.action.toLowerCase().includes(search.toLowerCase()) ||
         (actor?.name || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -59,7 +75,7 @@ export default function AuditLogsPage() {
         {/* Timeline */}
         <div className="space-y-3">
           {filtered.map((log) => {
-            const actor = mockUsers.find((u) => u.uid === log.actorId);
+            const actor = users.find((u) => u.uid === log.actorId);
             const config = actionConfig[log.action] || { color: "bg-slate-50 text-slate-600", icon: FileText, label: log.action.replace(/_/g, " ") };
             const Icon = config.icon;
             return (

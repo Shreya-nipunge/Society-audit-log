@@ -1,19 +1,29 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { StatsCard } from "@/components/StatsCard";
-import { mockExpenses } from "@/lib/mock-data";
 import { formatCompact, formatDate, cn } from "@/lib/utils";
 import { Wallet, TrendingDown, PieChart as PieIcon, Search, Plus } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { useState } from "react";
 import { ExpenseModal } from "@/components/ExpenseModal";
+import { subscribeToExpenses } from "@/lib/firestore-service";
+import { Expense } from "@/lib/types";
 
 const COLORS = ["#0F2040", "#1E3A66", "#C5A065", "#E5C48A", "#967635", "#0288D1", "#2E7D32"];
 
+import { useAuth } from "@/lib/auth";
+
 export default function ExpensesPage() {
+  const { user, loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
-  const [expenses, setExpenses] = useState(mockExpenses);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user || authLoading) return;
+    const unsub = subscribeToExpenses(setExpenses);
+    return () => unsub();
+  }, [user, authLoading]);
 
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
 
