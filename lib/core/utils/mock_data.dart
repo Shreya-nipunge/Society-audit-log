@@ -189,8 +189,15 @@ class MockData {
     return List.unmodifiable(transactions);
   }
 
+  static bool _idMatches(String id1, String id2) {
+    if (id1 == id2) return true;
+    final clean1 = id1.replaceFirst('web_', '').trim();
+    final clean2 = id2.replaceFirst('web_', '').trim();
+    return clean1 == clean2;
+  }
+
   static List<TransactionModel> getTransactionsForMember(String memberId) {
-    return transactions.where((t) => t.memberId == memberId).toList()
+    return transactions.where((t) => _idMatches(t.memberId, memberId)).toList()
       ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
   }
 
@@ -229,19 +236,19 @@ class MockData {
   }
 
   static List<BillModel> getUnpaidBillsForMember(String memberId) {
-    return bills.where((b) => b.memberId == memberId && !b.isPaid).toList()
+    return bills.where((b) => _idMatches(b.memberId, memberId) && !b.isPaid).toList()
       ..sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
   }
 
   static double getOutstandingAmount(String memberId) {
     // Total Dues from Demand Notices
     final totalBilled = demandNotices
-        .where((dn) => dn.memberId == memberId)
+        .where((dn) => _idMatches(dn.memberId, memberId))
         .fold(0.0, (sum, dn) => sum + dn.total);
 
     // Total Paid from Transactions
     final totalPaid = transactions
-        .where((t) => t.memberId == memberId)
+        .where((t) => _idMatches(t.memberId, memberId))
         .fold(0.0, (sum, t) => sum + t.amount);
 
     return totalBilled - totalPaid;

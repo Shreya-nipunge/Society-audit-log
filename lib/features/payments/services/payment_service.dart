@@ -2,17 +2,7 @@ import '../../../core/utils/mock_data.dart';
 
 class PaymentService {
   static double calculateOutstanding(String memberId) {
-    // Total Billed from Demand Notices
-    final totalBilled = MockData.demandNotices
-        .where((dn) => dn.memberId == memberId)
-        .fold(0.0, (sum, dn) => sum + dn.total);
-
-    // Total Paid from Transactions
-    final totalPaid = MockData.transactions
-        .where((t) => t.memberId == memberId)
-        .fold(0.0, (sum, t) => sum + t.amount);
-
-    return totalBilled - totalPaid;
+    return MockData.getOutstandingAmount(memberId);
   }
 
   static double getMonthlyCollection() {
