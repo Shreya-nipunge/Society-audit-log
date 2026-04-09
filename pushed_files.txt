@@ -1,0 +1,45 @@
+﻿commit dbe2c894c9685fd614dd900e34f0681cfea9b950
+Author: tanmaydchamp <tanmaypansare33@gmail.com>
+Date:   Thu Apr 9 17:26:50 2026 +0530
+
+    Refactoring member ledgers, proxy admins, UI roles, and security cleanup
+
+.gitignore
+devices.txt
+devices_utf8.txt
+lib/core/services/firestore_service.dart
+lib/core/utils/mock_data.dart
+lib/core/utils/real_society_data.dart
+lib/features/admin/screens/member_list_screen.dart
+lib/features/audit/screens/audit_log_screen.dart
+lib/features/audit/services/audit_service.dart
+lib/features/auth/models/user_model.dart
+lib/features/member/screens/member_dashboard.dart
+lib/features/reports/services/report_export_service.dart
+lib/main.dart
+web-dashboard/fix_roles.js
+web-dashboard/img_name.txt
+web-dashboard/package-lock.json
+web-dashboard/package.json
+web-dashboard/parsed_members.json
+web-dashboard/parsed_members_utf8.json
+web-dashboard/process_excel.js
+web-dashboard/seed_firestore.js
+web-dashboard/src/app/dashboard/audit-logs/page.tsx
+web-dashboard/src/app/dashboard/bills/page.tsx
+web-dashboard/src/app/dashboard/documents/page.tsx
+web-dashboard/src/app/dashboard/expenses/page.tsx
+web-dashboard/src/app/dashboard/layout.tsx
+web-dashboard/src/app/dashboard/members/page.tsx
+web-dashboard/src/app/dashboard/notices/page.tsx
+web-dashboard/src/app/dashboard/page.tsx
+web-dashboard/src/app/dashboard/reports/page.tsx
+web-dashboard/src/app/dashboard/transactions/page.tsx
+web-dashboard/src/app/login/page.tsx
+web-dashboard/src/components/Header.tsx
+web-dashboard/src/components/NoticeModal.tsx
+web-dashboard/src/components/Sidebar.tsx
+web-dashboard/src/lib/auth.tsx
+web-dashboard/src/lib/firestore-service.ts
+web-dashboard/src/lib/mock-data.ts
+web-dashboard/src/lib/types.ts

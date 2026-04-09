@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/utils/session_manager.dart';
-import '../../auth/models/user_model.dart';
 import '../models/audit_log_model.dart';
 
 class AuditService {
