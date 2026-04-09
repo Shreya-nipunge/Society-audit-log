@@ -145,7 +145,7 @@ class UserModel {
 
   // Backwards compatibility getter for existing mocks where `id` was used
   String get id => uid;
-  bool get isActive => status == 'active';
+  bool get isActive => status.toLowerCase() == 'active';
 
   UserModel copyWith({
     String? uid,

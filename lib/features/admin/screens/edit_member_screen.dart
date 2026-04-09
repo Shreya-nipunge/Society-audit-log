@@ -54,10 +54,10 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
   Future<void> _handleUpdate() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_showPasswordReset && _newPasswordController.text.trim().length < 6) {
+    if (_showPasswordReset && _newPasswordController.text.trim().length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('New password must be at least 6 characters'),
+          content: Text('New password must be at least 3 characters'),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -257,13 +257,13 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
                         child: CustomTextField(
                           controller: _newPasswordController,
                           label: 'New Password',
-                          hint: 'Min 6 characters',
+                          hint: 'Min 3 characters',
                           prefixIcon: Icons.lock_outline,
                           obscureText: _obscureNewPassword,
                           validator: (v) {
                             if (_showPasswordReset &&
-                                (v == null || v.length < 6)) {
-                              return 'Min 6 characters';
+                                (v == null || v.length < 3)) {
+                              return 'Min 3 characters';
                             }
                             return null;
                           },

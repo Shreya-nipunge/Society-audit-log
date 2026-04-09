@@ -28,8 +28,18 @@ class MockData {
   static List<NoticeModel> notices = [];
 
   static void syncWithFirestore() {
+    final adminEmails = RealSocietyData.users
+        .where((u) => u['uid'].toString().startsWith('admin_'))
+        .map((u) => u['email'].toString().toLowerCase())
+        .toSet();
+
     _firestore.getMembers().listen((updatedUsers) {
-      users = updatedUsers.map((u) {
+      // Filter out any Firestore users whose email clashes with admin proxies
+      final filteredUsers = updatedUsers
+          .where((u) => !adminEmails.contains(u.email.toLowerCase()))
+          .toList();
+
+      final memberList = filteredUsers.map((u) {
         final orig = RealSocietyData.users.firstWhere(
             (r) => r['uid'] == u.uid || r['uid'] == u.uid.replaceFirst('web_', ''), 
             orElse: () => <String, dynamic>{});
@@ -40,19 +50,19 @@ class MockData {
         merged['email'] = u.email;
         merged['role'] = u.role.name;
         merged['status'] = u.status;
-        merged['password'] = orig['password'] ?? '123456';
+        merged['password'] = orig['password'] ?? u.flatNumber;
         
         return UserModel.fromMap(merged);
       }).toList();
       
       final defaultAdmins = RealSocietyData.users
-          .where((u) => u['uid'].startsWith('admin_'))
+          .where((u) => u['uid'].toString().startsWith('admin_'))
           .map((m) => UserModel.fromMap(m))
           .toList();
           
-      users = [...defaultAdmins, ...users];
+      users = [...defaultAdmins, ...memberList];
       
-      debugPrint('SYNC: Updated ${users.length} members with correctly populated financial data');
+      debugPrint('SYNC: Updated ${users.length} members (${defaultAdmins.length} admins + ${memberList.length} members)');
     });
 
     _firestore.getTransactions().listen((updatedTx) {
@@ -113,15 +123,21 @@ class MockData {
 
   static UserModel? login(String email, String password) {
     debugPrint('MOCK_AUTH: Checking Email: "$email"');
+    debugPrint('MOCK_AUTH: Total users in memory: ${users.length}');
+    
+    // Log first few users for debugging
+    for (var i = 0; i < users.length && i < 5; i++) {
+        debugPrint('MOCK_AUTH: User[$i]: ${users[i].email}, Role: ${users[i].role}, Status: ${users[i].status}, isActive: ${users[i].isActive}');
+    }
 
     try {
       final user = users.firstWhere(
-        (user) =>
-            user.email.toLowerCase() == email.toLowerCase() && user.isActive,
+        (u) =>
+            u.email.toLowerCase().trim() == email.toLowerCase().trim() && u.isActive,
       );
 
       if (user.password != password) {
-        debugPrint('MOCK_AUTH: Password mismatch for ${user.email}');
+        debugPrint('MOCK_AUTH: Password mismatch for ${user.email}. Expected: ${user.password}, Got: $password');
         return null;
       }
 
@@ -130,7 +146,7 @@ class MockData {
       );
       return user;
     } catch (e) {
-      debugPrint('MOCK_AUTH: User not found for email "$email"');
+      debugPrint('MOCK_AUTH: User not found for email "$email". Error: $e');
       return null;
     }
   }
@@ -262,11 +278,18 @@ class MockData {
     double maintenance = 0, sinking = 0, repairs = 0, water = 0, others = 0;
 
     for (var t in transactions) {
-      maintenance += t.allocation.maintenance;
-      sinking += t.allocation.sinkingFund;
-      repairs += t.allocation.repairsFund;
-      water += t.allocation.waterCharges;
-      others += t.allocation.other;
+      if (t.allocation.total == 0 && t.amount > 0) {
+        // Apply default ratios if no explicit allocation exists
+        maintenance += t.amount * (allocationRatios['Maintenance'] ?? 0.70);
+        sinking += t.amount * (allocationRatios['Sinking Fund'] ?? 0.20);
+        repairs += t.amount * (allocationRatios['Repairs Fund'] ?? 0.10);
+      } else {
+        maintenance += t.allocation.maintenance;
+        sinking += t.allocation.sinkingFund;
+        repairs += t.allocation.repairsFund;
+        water += t.allocation.waterCharges;
+        others += t.allocation.other;
+      }
     }
 
     return {

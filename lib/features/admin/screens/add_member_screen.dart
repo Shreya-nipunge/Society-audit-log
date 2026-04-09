@@ -99,8 +99,8 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
           _showError('Society email is required');
           return false;
         }
-        if (_passwordController.text.trim().length < 6) {
-          _showError('Password must be at least 6 characters');
+        if (_passwordController.text.trim().length < 3) {
+          _showError('Password must be at least 3 characters');
           return false;
         }
         if (_passwordController.text != _confirmPasswordController.text) {
@@ -472,7 +472,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         CustomTextField(
           controller: _passwordController,
           label: 'Password *',
-          hint: 'Min 6 characters',
+          hint: 'Min 3 characters',
           prefixIcon: Icons.lock_outline,
           obscureText: _obscurePassword,
           validator: Validators.password,
