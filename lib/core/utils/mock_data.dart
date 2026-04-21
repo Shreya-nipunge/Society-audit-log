@@ -33,41 +33,45 @@ class MockData {
   static List<NoticeModel> notices = [];
 
   static void syncWithFirestore() {
-    final adminEmails = RealSocietyData.users
-        .where((u) => u['uid'].toString().startsWith('admin_'))
-        .map((u) => u['email'].toString().toLowerCase())
-        .toSet();
-
     _firestore.getMembers().listen((updatedUsers) {
-      // Filter out any Firestore users whose email clashes with admin proxies
-      final filteredUsers = updatedUsers
-          .where((u) => !adminEmails.contains(u.email.toLowerCase()))
-          .toList();
+      // Use a Map to deduplicate by email (case-insensitive)
+      final Map<String, UserModel> deduplicated = {};
 
-      final memberList = filteredUsers.map((u) {
-        final orig = RealSocietyData.users.firstWhere(
-            (r) => r['uid'] == u.uid || r['uid'] == u.uid.replaceFirst('web_', ''), 
-            orElse: () => <String, dynamic>{});
-            
-        final Map<String, dynamic> merged = Map<String, dynamic>.from(orig);
-        merged['uid'] = u.uid;
-        merged['name'] = u.name;
-        merged['email'] = u.email;
-        merged['role'] = u.role.name;
-        merged['status'] = u.status;
-        merged['password'] = orig['password'] ?? u.flatNumber;
+      // 1. Initial Load: Load local defaults from RealSocietyData
+      for (var m in RealSocietyData.users) {
+        final user = UserModel.fromMap(m);
+        deduplicated[user.email.toLowerCase().trim()] = user;
+      }
+
+      // 2. Merge Live Data: Apply updates from Firestore list
+      for (var u in updatedUsers) {
+        final emailKey = u.email.toLowerCase().trim();
         
-        return UserModel.fromMap(merged);
-      }).toList();
+        // Find existing local data to preserve certain fields (like password if missing in DB)
+        final existing = deduplicated[emailKey];
+        
+        if (existing != null) {
+          // Merge: Keep Firestore dynamic fields, but preserve local password/metadata if needed
+          deduplicated[emailKey] = u.copyWith(
+            password: u.password.isNotEmpty ? u.password : existing.password,
+            // Keep opening balance from Excel if Firestore doesn't provide it
+            openingBalance: u.openingBalance != 0 ? u.openingBalance : existing.openingBalance,
+          );
+        } else {
+          // New user from Firestore that isn't in local RealSocietyData
+          deduplicated[emailKey] = u;
+        }
+      }
+
+      // 3. Finalize: Set the global users list
+      users = deduplicated.values.toList();
       
-      final defaultAdmins = RealSocietyData.users
-          .where((u) => u['uid'].toString().startsWith('admin_'))
-          .map((m) => UserModel.fromMap(m))
-          .toList();
-          
-      users = [...defaultAdmins, ...memberList];
+      // Sort for consistency
+      users.sort((a, b) => a.flatNumber.compareTo(b.flatNumber));
       
-      debugPrint('SYNC: Updated ${users.length} members (${defaultAdmins.length} admins + ${memberList.length} members)');
+      final members = users.where((u) => u.role == UserRole.member).length;
+      final admins = users.length - members;
+      debugPrint('SYNC: Updated ${users.length} members ($admins admins + $members members) - Deduplicated.');
     });
 
     _firestore.getTransactions().listen((updatedTx) {
