@@ -1,6 +1,6 @@
 {
-    "name": "society_audit_log",
-    "short_name": "society_audit_log",
+    "name": "Society Audit",
+    "short_name": "Society Audit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
