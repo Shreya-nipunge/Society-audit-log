@@ -44,9 +44,74 @@ class FirestoreService {
       return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
     });
   }
+
+  // Real-time stream of documents
+  Stream<List<Map<String, dynamic>>> getDocuments() {
+    return _db.collection('documents').orderBy('uploadedAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+    });
+  }
   
   // Update member data
   Future<void> updateMember(String uid, Map<String, dynamic> data) async {
     await _db.collection('users').doc(uid).update(data);
+  }
+
+  // Create document in Firestore
+  Future<void> createDocument(Map<String, dynamic> doc) async {
+    await _db.collection('documents').doc(doc['id']).set(doc);
+  }
+
+  // Create maintenance receipt in Firestore
+  Future<void> createMaintenanceReceipt(Map<String, dynamic> receipt) async {
+    await _db.collection('maintenance_receipts').doc(receipt['receiptNo'].replaceAll('/', '_')).set(receipt);
+  }
+
+  // Create demand notice in Firestore
+  Future<void> createDemandNotice(Map<String, dynamic> notice) async {
+    await _db.collection('bills').doc(notice['id']).set(notice);
+  }
+
+  // Real-time stream of maintenance receipts
+  Stream<List<Map<String, dynamic>>> getMaintenanceReceipts() {
+    return _db.collection('maintenance_receipts').orderBy('generatedAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  // Create a new member in Firestore (persists across app restarts)
+  Future<void> createMember(UserModel user) async {
+    try {
+      await _db.collection('users').doc(user.uid).set({
+        'name': user.name,
+        'email': user.email,
+        'phone': user.phone,
+        'flatNumber': user.flatNumber,
+        'role': user.role.name,
+        'status': user.status,
+        'societyId': user.societyId,
+        'createdBy': user.createdBy,
+        'createdAt': DateTime.now().toIso8601String(),
+        'password': user.password,
+        'openingBalance': user.openingBalance,
+        'sinkingFund': user.sinkingFund,
+        'maintenanceAmount': user.maintenanceAmount,
+        'municipalTax': user.municipalTax,
+        'noc': user.noc,
+        'parkingCharges': user.parkingCharges,
+        'delayCharges': user.delayCharges,
+        'buildingFund': user.buildingFund,
+        'roomTransferFees': user.roomTransferFees,
+        'totalReceivable': user.totalReceivable,
+        'totalReceived': user.totalReceived,
+        'closingBalance': user.closingBalance,
+        'fixedMonthlyCharges': user.fixedMonthlyCharges,
+        'annualCharges': user.annualCharges,
+        'variableCharges': user.variableCharges,
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('FirestoreService: Error creating member: $e');
+    }
   }
 }

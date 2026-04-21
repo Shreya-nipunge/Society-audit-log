@@ -9,7 +9,10 @@ import 'features/member/screens/member_dashboard.dart';
 import 'features/member/screens/payment_history_screen.dart';
 import 'features/member/screens/profile_screen.dart';
 import 'features/member/screens/my_dues_screen.dart';
+import 'features/member/screens/receipt_view_screen.dart';
+import 'features/member/screens/member_receipt_list_screen.dart';
 import 'features/billing/screens/generate_bills_screen.dart';
+import 'features/billing/models/maintenance_receipt_model.dart';
 import 'features/admin/screens/bulk_import_screen.dart';
 import 'features/payments/screens/allocation_editor.dart';
 import 'features/admin/screens/system_health_screen.dart';
@@ -113,11 +116,11 @@ class SocietyAuditLogApp extends StatelessWidget {
             child: MemberProfileScreen(),
           ),
           '/generate-bills': (context) => const RoleGuard(
-            allowedRoles: [UserRole.chairman, UserRole.treasurer],
+            allowedRoles: [UserRole.chairman, UserRole.treasurer, UserRole.secretary],
             child: GenerateBillsScreen(),
           ),
           '/upload-document': (context) => const RoleGuard(
-            allowedRoles: [UserRole.chairman, UserRole.secretary],
+            allowedRoles: [UserRole.chairman, UserRole.secretary, UserRole.treasurer],
             child: DocumentUploadScreen(),
           ),
           '/reports': (context) => const RoleGuard(
@@ -213,11 +216,16 @@ class SocietyAuditLogApp extends StatelessWidget {
           },
           '/notice-list': (context) => const RoleGuard(
             allowedRoles: [
+              UserRole.member,
               UserRole.chairman,
               UserRole.secretary,
               UserRole.treasurer,
             ],
             child: NoticeListScreen(),
+          ),
+          '/my-receipts': (context) => const RoleGuard(
+            allowedRoles: [UserRole.member],
+            child: MemberReceiptListScreen(),
           ),
           '/create-notice': (context) => const RoleGuard(
             allowedRoles: [UserRole.chairman, UserRole.secretary],
@@ -235,6 +243,12 @@ class SocietyAuditLogApp extends StatelessWidget {
             allowedRoles: [UserRole.chairman, UserRole.secretary, UserRole.treasurer],
             child: AdminComplaintsScreen(),
           ),
+          '/receipt-view': (context) {
+            final receipt =
+                ModalRoute.of(context)!.settings.arguments
+                    as MaintenanceReceiptModel;
+            return ReceiptViewScreen(receipt: receipt);
+          },
         },
       ),
     );

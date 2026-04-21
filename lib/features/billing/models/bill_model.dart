@@ -13,7 +13,8 @@ class BillModel {
   final DateTime dueDate; // New for ERD
 
   // Keep these locals for the frontend mock if needed
-  final double waterCharges;
+  final double buildingFund;
+  final double municipalTax;
   final String monthString;
   final bool isPaid;
 
@@ -24,7 +25,8 @@ class BillModel {
     this.month = 1,
     this.year = 2026,
     required this.maintenanceAmount,
-    this.waterCharges = 0,
+    this.buildingFund = 0,
+    this.municipalTax = 0,
     required this.otherCharges,
     required this.totalAmount,
     this.paidAmount = 0,
@@ -60,7 +62,8 @@ class BillModel {
       month: map['month'] ?? 1,
       year: map['year'] ?? 2026,
       maintenanceAmount: (map['maintenanceAmount'] ?? 0).toDouble(),
-      waterCharges: 0, 
+      buildingFund: (map['buildingFund'] ?? 0).toDouble(),
+      municipalTax: (map['municipalTax'] ?? 0).toDouble(),
       otherCharges: (map['otherCharges'] ?? 0).toDouble(),
       totalAmount: (map['totalAmount'] ?? map['total'] ?? 0).toDouble(),
       paidAmount: (map['paidAmount'] ?? 0).toDouble(),
@@ -79,7 +82,8 @@ class BillModel {
       month: month,
       year: year,
       maintenanceAmount: maintenanceAmount,
-      waterCharges: waterCharges,
+      buildingFund: buildingFund,
+      municipalTax: municipalTax,
       otherCharges: otherCharges,
       totalAmount: totalAmount,
       paidAmount: paidAmount,

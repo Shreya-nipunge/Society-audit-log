@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/mock_data.dart';
+import '../../../core/utils/session_manager.dart';
+import '../../auth/models/user_model.dart';
 import '../models/notice_model.dart';
 
 class NoticeListScreen extends StatefulWidget {
@@ -29,6 +31,9 @@ class _NoticeListScreenState extends State<NoticeListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final user = SessionManager.currentUser;
+    final isMember = user?.role == UserRole.member;
+
     final publishedNotices = MockData.notices
         .where((n) => n.status == 'Published')
         .toList();
@@ -43,29 +48,35 @@ class _NoticeListScreenState extends State<NoticeListScreen>
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: [
-            const Tab(text: 'Published'),
-            Tab(text: 'Drafts (${draftNotices.length})'),
-          ],
-        ),
+        bottom: isMember
+            ? null
+            : TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                tabs: [
+                  const Tab(text: 'Published'),
+                  Tab(text: 'Drafts (${draftNotices.length})'),
+                ],
+              ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildNoticeList(publishedNotices, isDraft: false),
-          _buildNoticeList(draftNotices, isDraft: true),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/create-notice'),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      body: isMember
+          ? _buildNoticeList(publishedNotices, isDraft: false)
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildNoticeList(publishedNotices, isDraft: false),
+                _buildNoticeList(draftNotices, isDraft: true),
+              ],
+            ),
+      floatingActionButton: isMember
+          ? null
+          : FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, '/create-notice'),
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
     );
   }
 

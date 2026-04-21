@@ -93,6 +93,13 @@ class _DocumentListScreenState extends State<DocumentListScreen> {
           ),
         ],
       ),
+      floatingActionButton: user?.role != UserRole.member
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, '/upload-document'),
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
     );
   }
 

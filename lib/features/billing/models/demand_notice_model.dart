@@ -4,7 +4,8 @@ class DemandNoticeModel {
   final String month;
   final int year;
   final double maintenance;
-  final double waterCharges;
+  final double buildingFund;
+  final double municipalTax;
   final double otherCharges;
   final DateTime dueDate;
   final DateTime generatedAt;
@@ -15,13 +16,14 @@ class DemandNoticeModel {
     required this.month,
     required this.year,
     required this.maintenance,
-    this.waterCharges = 0.0,
+    this.buildingFund = 0.0,
+    this.municipalTax = 0.0,
     this.otherCharges = 0.0,
     required this.dueDate,
     required this.generatedAt,
   });
 
-  double get total => maintenance + waterCharges + otherCharges;
+  double get total => maintenance + buildingFund + municipalTax + otherCharges;
 
   Map<String, dynamic> toMap() {
     return {
@@ -30,7 +32,8 @@ class DemandNoticeModel {
       'month': month,
       'year': year,
       'maintenance': maintenance,
-      'waterCharges': waterCharges,
+      'buildingFund': buildingFund,
+      'municipalTax': municipalTax,
       'otherCharges': otherCharges,
       'dueDate': dueDate.toIso8601String(),
       'generatedAt': generatedAt.toIso8601String(),
@@ -44,10 +47,11 @@ class DemandNoticeModel {
       month: map['month'] ?? '',
       year: map['year'] ?? 2025,
       maintenance: (map['maintenance'] ?? 0.0).toDouble(),
-      waterCharges: (map['waterCharges'] ?? 0.0).toDouble(),
+      buildingFund: (map['buildingFund'] ?? 0.0).toDouble(),
+      municipalTax: (map['municipalTax'] ?? 0.0).toDouble(),
       otherCharges: (map['otherCharges'] ?? 0.0).toDouble(),
-      dueDate: DateTime.parse(map['dueDate']),
-      generatedAt: DateTime.parse(map['generatedAt']),
+      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : DateTime.now(),
+      generatedAt: map['generatedAt'] != null ? DateTime.parse(map['generatedAt']) : DateTime.now(),
     );
   }
 }

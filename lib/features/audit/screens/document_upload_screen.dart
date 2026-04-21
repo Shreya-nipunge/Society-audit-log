@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/session_manager.dart';
+import '../../../core/services/cloud_storage_service.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../models/document_model.dart';
@@ -21,6 +24,9 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
   String _selectedCategory = 'Circulars';
   bool _isMemberVisible = true;
   bool _isLoading = false;
+  File? _selectedFile;
+
+  final CloudStorageService _cloudStorage = CloudStorageService();
 
   final List<String> _categories = [
     'Annual Reports',
@@ -39,15 +45,31 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
 
   Future<void> _handleUpload() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (_selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please attach a file first')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
+      final downloadUrl = await _cloudStorage.uploadDocument(
+        file: _selectedFile!, 
+        fileName: _fileNameController.text
+      );
+
+      if (downloadUrl == null) {
+        throw Exception('File upload failed');
+      }
+
       final doc = DocumentModel(
         id: 'doc_${DateTime.now().millisecondsSinceEpoch}',
         title: _titleController.text,
         category: _selectedCategory,
-        fileName: _fileNameController.text,
+        fileName: downloadUrl, // Storing the actual URL here to fit the ERD mapping
         uploadedBy: SessionManager.currentUser?.name ?? 'Admin',
         uploadedAt: DateTime.now(),
         visibility: _isMemberVisible ? 'member' : 'admin',
@@ -131,24 +153,30 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Mock File Picker
+              // File Picker
               CustomTextField(
                 controller: _fileNameController,
-                label: 'File Name (Mock Upload)',
-                hint: 'e.g., circular_01.pdf',
+                label: 'Attach File',
+                hint: 'No file selected',
+                readOnly: true, // Prevent manual editing
                 prefixIcon: Icons.file_present_outlined,
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.attach_file, color: AppColors.primary),
-                  onPressed: () {
-                    // In a real app, this would open a file picker.
-                    // Here we'll just pre-fill a mock filename.
-                    if (_fileNameController.text.isEmpty) {
-                      _fileNameController.text =
-                          'society_doc_${DateTime.now().minute}.pdf';
+                  onPressed: () async {
+                    fp.FilePickerResult? result = await fp.FilePicker.pickFiles(
+                      type: fp.FileType.custom,
+                      allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png', 'jpeg'],
+                    );
+
+                    if (result != null && result.files.single.path != null) {
+                      setState(() {
+                        _selectedFile = File(result.files.single.path!);
+                        _fileNameController.text = result.files.single.name;
+                      });
                     }
                   },
                 ),
-                validator: (v) => v!.isEmpty ? 'File name is required' : null,
+                validator: (v) => v!.isEmpty ? 'Please select a file' : null,
               ),
               const SizedBox(height: 24),
 
@@ -166,17 +194,19 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Visible to Members',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            _isMemberVisible ? 'Public (Visible to All)' : 'Private (Admin Only)',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            'Allow regular members to view this document',
-                            style: TextStyle(
+                            _isMemberVisible 
+                              ? 'Regular members can view this document'
+                              : 'Only Chairman, Treasurer, and Secretary can view this',
+                            style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
                             ),
@@ -187,6 +217,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                     Switch(
                       value: _isMemberVisible,
                       activeThumbColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                       onChanged: (val) =>
                           setState(() => _isMemberVisible = val),
                     ),

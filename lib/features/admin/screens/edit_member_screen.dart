@@ -190,7 +190,6 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
               Row(
                 children: [
                   Expanded(
-                    flex: 2,
                     child: CustomTextField(
                       controller: _flatController,
                       label: 'Flat Number',

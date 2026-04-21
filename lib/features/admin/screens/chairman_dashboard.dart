@@ -374,8 +374,8 @@ class ChairmanDashboard extends StatelessWidget {
         ),
         _buildGovCard(
           context,
-          'Generate Bills',
-          'Monthly demand notices',
+          'Maintenance Receipt',
+          'Generate member receipts',
           Icons.receipt_rounded,
           AppColors.secondary,
           '/generate-bills',

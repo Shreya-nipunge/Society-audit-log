@@ -73,10 +73,10 @@ class AdminDashboard extends StatelessWidget {
                 children: [
                   _buildQuickAction(
                     context,
-                    'Record\nPayment',
-                    Icons.add_card_rounded,
-                    AppColors.success,
-                    '/record-payment',
+                    'Maintenance\nReceipt',
+                    Icons.receipt_rounded,
+                    AppColors.secondary,
+                    '/generate-bills',
                   ),
                   _buildQuickAction(
                     context,
@@ -101,10 +101,10 @@ class AdminDashboard extends StatelessWidget {
                   ),
                   _buildQuickAction(
                     context,
-                    'Generate\nBills',
-                    Icons.receipt_rounded,
-                    const Color(0xFF0EA5E9),
-                    '/generate-bills',
+                    'Reports',
+                    Icons.analytics_rounded,
+                    AppColors.success,
+                    '/reports',
                   ),
                 ],
               ),
@@ -166,10 +166,10 @@ class AdminDashboard extends StatelessWidget {
                 ),
                 _buildOpsCard(
                   context,
-                  'Payments',
-                  Icons.payments_rounded,
-                  AppColors.success,
-                  '/record-payment',
+                  'Maintenance Receipt',
+                  Icons.receipt_rounded,
+                  AppColors.secondary,
+                  '/generate-bills',
                 ),
                 _buildOpsCard(
                   context,

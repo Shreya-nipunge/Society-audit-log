@@ -362,7 +362,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         Row(
           children: [
             Expanded(
-              flex: 2,
               child: CustomTextField(
                 controller: _flatController,
                 label: 'Flat Number *',

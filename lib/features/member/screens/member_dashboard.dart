@@ -6,6 +6,8 @@ import '../../../core/utils/session_manager.dart';
 import '../../../core/utils/mock_data.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../auth/models/user_model.dart';
+import '../../billing/services/notification_service.dart';
+import '../../billing/services/penalty_service.dart';
 
 class MemberDashboard extends StatelessWidget {
   const MemberDashboard({super.key});
@@ -21,6 +23,18 @@ class MemberDashboard extends StatelessWidget {
     final lastPaymentStr = lastPayment != null
         ? DateFormat('dd MMM yyyy').format(lastPayment)
         : 'No payments yet';
+
+    // Get notifications
+    final now = DateTime.now();
+    final monthName = DateFormat('MMMM').format(now);
+    final unpaidMonths = MockData.getUnpaidMonthsForMember(user?.id ?? '');
+    final lateMonths = PenaltyService.countLateMonths(unpaidMonths: unpaidMonths);
+    final notifications = NotificationService.getAllNotifications(
+      outstandingAmount: outstanding,
+      monthName: monthName,
+      totalLateMonths: lateMonths,
+    );
+
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -51,7 +65,18 @@ class MemberDashboard extends StatelessWidget {
           children: [
             // Welcome Card
             _buildWelcomeCard(user),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
+
+            // --- Notification Banners ---
+            if (notifications.isNotEmpty) ...[
+              ...notifications.map(
+                (n) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildNotificationBanner(n),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // Dues Summary Section
             Row(
@@ -70,7 +95,7 @@ class MemberDashboard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            _buildDuesCard(context, outstanding, lastPaymentStr),
+            _buildDuesCard(context, outstanding, lastPaymentStr, lateMonths),
             const SizedBox(height: 32),
 
             // Quick Actions Section
@@ -93,17 +118,17 @@ class MemberDashboard extends StatelessWidget {
                 ),
                 _buildActionTile(
                   context,
-                  'Payments',
-                  Icons.receipt_long_rounded,
+                  'Notices',
+                  Icons.campaign_rounded,
                   AppColors.secondary,
-                  () => Navigator.pushNamed(context, '/payment-history'),
+                  () => Navigator.pushNamed(context, '/notice-list'),
                 ),
                 _buildActionTile(
                   context,
-                  'Documents',
+                  'Receipts',
                   Icons.description_rounded,
                   const Color(0xFF6366F1),
-                  () => Navigator.pushNamed(context, '/document-list'),
+                  () => Navigator.pushNamed(context, '/my-receipts'),
                 ),
                 _buildActionTile(
                   context,
@@ -111,6 +136,13 @@ class MemberDashboard extends StatelessWidget {
                   Icons.person_outline_rounded,
                   const Color(0xFF0EA5E9),
                   () => Navigator.pushNamed(context, '/profile'),
+                ),
+                _buildActionTile(
+                  context,
+                  'Documents',
+                  Icons.folder_rounded,
+                  const Color(0xFF8B5CF6),
+                  () => Navigator.pushNamed(context, '/document-list'),
                 ),
                 _buildActionTile(
                   context,
@@ -122,38 +154,15 @@ class MemberDashboard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 32),
-
-            // Recent Notices Section
-            Text('Recent Notices', style: AppTextStyles.h3),
-            const SizedBox(height: 12),
-            ...MockData.notices
-                .take(2)
-                .map(
-                  (notice) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _buildNoticeCard(
-                      title: notice.title,
-                      date: DateFormat('dd MMM yyyy').format(notice.date),
-                      type: 'Notice',
-                      onTap: () => Navigator.pushNamed(
-                        context,
-                        '/notice-detail',
-                        arguments: notice.toMap(),
-                      ),
-                    ),
-                  ),
-                ),
-            
-            const SizedBox(height: 32),
-            
-            // --- NEW: Society Audit / Ledger Section ---
+             
+             // --- Society Audit / Ledger Section ---
             Text('Society Ledger (B-O)', style: AppTextStyles.h3),
             const SizedBox(height: 12),
             _buildSocietyLedger(user),
             
             const SizedBox(height: 32),
             
-            // --- NEW: 3-column Charges Section ---
+            // --- 3-column Charges Section ---
             Text('Charges Types', style: AppTextStyles.h3),
             const SizedBox(height: 12),
             _buildChargesTypes(user),
@@ -164,9 +173,69 @@ class MemberDashboard extends StatelessWidget {
     );
   }
 
+  // --- Notification Banner ---
+  Widget _buildNotificationBanner(MaintenanceNotification notification) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: notification.backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: notification.color.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: notification.color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              notification.icon,
+              color: notification.color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: notification.color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.message,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget _buildSocietyLedger(UserModel? user) {
     if (user == null) return const SizedBox.shrink();
     
+    final paidContributions = MockData.getMemberContributions(user.id);
+    final totalOutstanding = MockData.getOutstandingAmount(user.id);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -177,19 +246,18 @@ class MemberDashboard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildLedgerRow('Opening Balance (1-Apr)', user.openingBalance),
-          _buildLedgerRow('Sinking Fund', user.sinkingFund),
-          _buildLedgerRow('Maintenance', user.maintenanceAmount),
-          _buildLedgerRow('Municipal Tax', user.municipalTax),
-          _buildLedgerRow('NOC', user.noc),
-          _buildLedgerRow('Parking Charges', user.parkingCharges),
-          _buildLedgerRow('Delay Charges', user.delayCharges),
-          _buildLedgerRow('Building Fund', user.buildingFund),
-          _buildLedgerRow('Room Transfer Fees', user.roomTransferFees),
+          _buildLedgerRow('Maintenance', paidContributions['Maintenance']!),
+          _buildLedgerRow('Sinking Fund', paidContributions['Sinking Fund']!),
+          _buildLedgerRow('Municipal Tax', paidContributions['Municipal Tax']!),
+          if ((paidContributions['NOC'] ?? 0) > 0) _buildLedgerRow('NOC', paidContributions['NOC']!),
+          if ((paidContributions['Parking Charges'] ?? 0) > 0) _buildLedgerRow('Parking Charges', paidContributions['Parking Charges']!),
+          if ((paidContributions['Delay Charges'] ?? 0) > 0) _buildLedgerRow('Delay Charges', paidContributions['Delay Charges']!),
+          if ((paidContributions['Building Fund'] ?? 0) > 0) _buildLedgerRow('Building Fund', paidContributions['Building Fund']!),
+          if ((paidContributions['Room Transfer Fees'] ?? 0) > 0) _buildLedgerRow('Room Transfer Fees', paidContributions['Room Transfer Fees']!),
+          if ((paidContributions['Other Charges'] ?? 0) > 0) _buildLedgerRow('Other Charges', paidContributions['Other Charges']!),
           const Divider(height: 24),
-          _buildLedgerRow('Total Receivable', user.totalReceivable, isBold: true, color: AppColors.primary),
-          _buildLedgerRow('Total Received', user.totalReceived, color: AppColors.success),
-          _buildLedgerRow('Closing Balance (31-Mar)', user.closingBalance, isBold: true, color: AppColors.error),
+          _buildLedgerRow('Total Paid Contributions', paidContributions['Total Paid']!, color: AppColors.success),
+          _buildLedgerRow('Total Outstanding Dues', totalOutstanding, isBold: true, color: AppColors.error),
         ],
       ),
     );
@@ -349,8 +417,11 @@ class MemberDashboard extends StatelessWidget {
     BuildContext context,
     double outstanding,
     String lastPaymentDate,
+    int lateMonths,
   ) {
     bool isOverdue = outstanding > 0;
+    final penalty = lateMonths * 25.0;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -394,6 +465,42 @@ class MemberDashboard extends StatelessWidget {
               ),
             ],
           ),
+
+          // Penalty breakdown if applicable
+          if (lateMonths > 0 && penalty > 0) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    size: 16,
+                    color: AppColors.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Penalty: ₹${penalty.toStringAsFixed(0)} ($lateMonths month${lateMonths > 1 ? 's' : ''} × ₹25)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Divider(height: 1),
@@ -471,76 +578,6 @@ class MemberDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildNoticeCard({
-    required String title,
-    required String date,
-    required String type,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.campaign_rounded,
-                color: AppColors.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTextStyles.labelLarge),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(date, style: AppTextStyles.caption),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          type,
-                          style: AppTextStyles.caption.copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildRoleBadge(UserRole? role) {
     String label = 'MEMBER';

@@ -44,7 +44,7 @@ class AdminDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
-            'Billing',
+            'Maintenance Receipt',
             Icons.receipt_long_outlined,
             '/generate-bills',
           ),

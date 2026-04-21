@@ -51,7 +51,6 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
           // Search Bar
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white,
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search by Name, Flat, or Email...',
@@ -59,6 +58,8 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                filled: true,
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -86,7 +87,7 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: members.length,
                     itemBuilder: (context, index) {
                       final member = members[index];
@@ -98,6 +99,8 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
       ),
     );
   }
+
+
 
   Widget _buildMemberLedgerCard(UserModel user) {
     return Container(
@@ -119,6 +122,10 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
         subtitle: Text(
           'Flat: ${user.flatNumber} | Outstanding: ₹${NumberFormat('#,##,###').format(user.closingBalance)}',
           style: const TextStyle(fontSize: 12, color: AppColors.error),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit_note_rounded, color: AppColors.primary),
+          onPressed: () => _showEditMemberBottomSheet(user),
         ),
         children: [
           Padding(
@@ -256,6 +263,152 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showEditMemberBottomSheet(UserModel user) {
+    final controllers = {
+      'Opening Balance': TextEditingController(text: user.openingBalance.toStringAsFixed(0)),
+      'Sinking Fund': TextEditingController(text: user.sinkingFund.toStringAsFixed(0)),
+      'Maintenance': TextEditingController(text: user.maintenanceAmount.toStringAsFixed(0)),
+      'Municipal Tax': TextEditingController(text: user.municipalTax.toStringAsFixed(0)),
+      'NOC': TextEditingController(text: user.noc.toStringAsFixed(0)),
+      'Parking Charges': TextEditingController(text: user.parkingCharges.toStringAsFixed(0)),
+      'Delay Charges': TextEditingController(text: user.delayCharges.toStringAsFixed(0)),
+      'Building Fund': TextEditingController(text: user.buildingFund.toStringAsFixed(0)),
+      'Room Transfer Fees': TextEditingController(text: user.roomTransferFees.toStringAsFixed(0)),
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Edit ${user.name}\'s Ledger',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    ...controllers.entries.map((entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: TextFormField(
+                            controller: entry.value,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: entry.key,
+                              prefixText: '₹ ',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        )),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        final updatedUser = UserModel(
+                          uid: user.uid,
+                          name: user.name,
+                          email: user.email,
+                          phone: user.phone,
+                          password: user.password,
+                          flatNumber: user.flatNumber,
+                          role: user.role,
+                          societyId: user.societyId,
+                          status: user.status,
+                          createdBy: user.createdBy,
+                          createdAt: user.createdAt,
+                          openingBalance: double.tryParse(controllers['Opening Balance']!.text) ?? 0,
+                          sinkingFund: double.tryParse(controllers['Sinking Fund']!.text) ?? 0,
+                          maintenanceAmount: double.tryParse(controllers['Maintenance']!.text) ?? 0,
+                          municipalTax: double.tryParse(controllers['Municipal Tax']!.text) ?? 0,
+                          noc: double.tryParse(controllers['NOC']!.text) ?? 0,
+                          parkingCharges: double.tryParse(controllers['Parking Charges']!.text) ?? 0,
+                          delayCharges: double.tryParse(controllers['Delay Charges']!.text) ?? 0,
+                          buildingFund: double.tryParse(controllers['Building Fund']!.text) ?? 0,
+                          roomTransferFees: double.tryParse(controllers['Room Transfer Fees']!.text) ?? 0,
+                          // Recalculate totals if necessary
+                          totalReceivable: (double.tryParse(controllers['Opening Balance']!.text) ?? 0) +
+                              (double.tryParse(controllers['Sinking Fund']!.text) ?? 0) +
+                              (double.tryParse(controllers['Maintenance']!.text) ?? 0) +
+                              (double.tryParse(controllers['Municipal Tax']!.text) ?? 0) +
+                              (double.tryParse(controllers['NOC']!.text) ?? 0) +
+                              (double.tryParse(controllers['Parking Charges']!.text) ?? 0) +
+                              (double.tryParse(controllers['Delay Charges']!.text) ?? 0) +
+                              (double.tryParse(controllers['Building Fund']!.text) ?? 0) +
+                              (double.tryParse(controllers['Room Transfer Fees']!.text) ?? 0),
+                          totalReceived: user.totalReceived,
+                        );
+                        
+                        // Closing balance = Receivable - Received
+
+                        
+                        MockData.updateUser(updatedUser);
+                        setState(() {});
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ledger updated successfully')),
+                        );
+                      },
+                      child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

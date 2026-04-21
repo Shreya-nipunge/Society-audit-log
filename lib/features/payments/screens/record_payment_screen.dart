@@ -28,7 +28,8 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
   final _maintenanceController = TextEditingController(text: '0');
   final _sinkingController = TextEditingController(text: '0');
   final _repairsController = TextEditingController(text: '0');
-  final _waterController = TextEditingController(text: '0');
+  final _buildingFundController = TextEditingController(text: '0');
+  final _municipalTaxController = TextEditingController(text: '0');
   final _otherController = TextEditingController(text: '0');
   final _referenceController = TextEditingController();
 
@@ -43,7 +44,8 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
     _maintenanceController.dispose();
     _sinkingController.dispose();
     _repairsController.dispose();
-    _waterController.dispose();
+    _buildingFundController.dispose();
+    _municipalTaxController.dispose();
     _otherController.dispose();
     _referenceController.dispose();
     super.dispose();
@@ -54,8 +56,31 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
       _selectedMember = member;
       if (member != null) {
         _outstandingAmount = MockData.getOutstandingAmount(member.id);
+        
+        final pendingReceipts = MockData.getUnresolvedPendingReceipts(member.id);
+        double sMaint = 0, sSink = 0, sTax = 0, sBuild = 0, sOther = 0;
+        for (var r in pendingReceipts) {
+          sMaint += r.maintenance;
+          sSink += r.sinkingFund;
+          sTax += r.municipalTax;
+          sBuild += r.buildingFund;
+          sOther += r.noc + r.parkingCharges + r.miscellaneous + r.penaltyAmount;
+        }
+
+        _sinkingController.text = sSink.toStringAsFixed(0);
+        _maintenanceController.text = sMaint.toStringAsFixed(0);
+        _municipalTaxController.text = sTax.toStringAsFixed(0);
+        _buildingFundController.text = sBuild.toStringAsFixed(0);
+        _otherController.text = sOther.toStringAsFixed(0);
+        _amountController.text = _outstandingAmount.toStringAsFixed(0);
       } else {
         _outstandingAmount = 0.0;
+        _sinkingController.text = '0';
+        _maintenanceController.text = '0';
+        _municipalTaxController.text = '0';
+        _buildingFundController.text = '0';
+        _otherController.text = '0';
+        _amountController.text = '0';
       }
     });
   }
@@ -69,13 +94,14 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
       return;
     }
 
-    final totalAllocated =
-        double.parse(_maintenanceController.text) +
-        double.parse(_sinkingController.text) +
-        double.parse(_repairsController.text) +
-        double.parse(_waterController.text) +
-        double.parse(_otherController.text);
+    final maintenance = double.tryParse(_maintenanceController.text) ?? 0;
+    final sinking = double.tryParse(_sinkingController.text) ?? 0;
+    final repairs = double.tryParse(_repairsController.text) ?? 0;
+    final building = double.tryParse(_buildingFundController.text) ?? 0;
+    final tax = double.tryParse(_municipalTaxController.text) ?? 0;
+    final other = double.tryParse(_otherController.text) ?? 0;
 
+    final totalAllocated = maintenance + sinking + repairs + building + tax + other;
     final totalAmount = double.tryParse(_amountController.text) ?? 0.0;
 
     if ((totalAllocated - totalAmount).abs() > 0.1) {
@@ -112,7 +138,8 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
           maintenance: double.parse(_maintenanceController.text),
           sinkingFund: double.parse(_sinkingController.text),
           repairsFund: double.parse(_repairsController.text),
-          waterCharges: double.parse(_waterController.text),
+          buildingFund: double.parse(_buildingFundController.text),
+          municipalTax: double.parse(_municipalTaxController.text),
           other: double.parse(_otherController.text),
         ),
         receiptNo: receiptNo,
@@ -325,8 +352,9 @@ class _RecordPaymentScreenState extends State<RecordPaymentScreen> {
               _buildAllocationField('Maintenance', _maintenanceController),
               _buildAllocationField('Sinking Fund', _sinkingController),
               _buildAllocationField('Repairs Fund', _repairsController),
-              _buildAllocationField('Water Charges', _waterController),
-              _buildAllocationField('Other', _otherController),
+              _buildAllocationField('Building Fund', _buildingFundController),
+              _buildAllocationField('Municipal Tax', _municipalTaxController),
+              _buildAllocationField('Other Charges', _otherController),
 
               const SizedBox(height: 40),
               CustomButton(

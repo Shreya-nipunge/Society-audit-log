@@ -14,12 +14,13 @@ class ReportExportService {
   static const PdfColor _primaryColor = PdfColors.indigo900;
   static const PdfColor _accentColor = PdfColors.amber700;
 
-  static pw.Widget _buildHeader(String title) {
+  static pw.Widget _buildHeader(String documentTitle) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -27,7 +28,7 @@ class ReportExportService {
                 pw.Text(
                   AppStrings.societyName.toUpperCase(),
                   style: pw.TextStyle(
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: pw.FontWeight.bold,
                     color: _primaryColor,
                   ),
@@ -35,38 +36,45 @@ class ReportExportService {
                 pw.SizedBox(height: 4),
                 pw.Text(
                   AppStrings.societyAddress,
-                  style: const pw.TextStyle(
-                    fontSize: 10,
-                    color: PdfColors.grey700,
-                  ),
+                  style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
                 ),
                 pw.Text(
                   'Reg No: MAH/2024/CHS/1234',
-                  style: const pw.TextStyle(
-                    fontSize: 9,
-                    color: PdfColors.grey600,
-                  ),
+                  style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
               ],
             ),
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: _primaryColor, width: 1.5),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Text(
+                documentTitle,
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                  letterSpacing: 1.0,
+                  color: _primaryColor,
+                ),
+              ),
+            ),
           ],
         ),
-        pw.SizedBox(height: 15),
+        pw.SizedBox(height: 12),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(
+              'Generated on: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 8),
         pw.Divider(color: _accentColor, thickness: 2),
-        pw.SizedBox(height: 15),
-        pw.Text(
-          title,
-          style: pw.TextStyle(
-            fontSize: 16,
-            fontWeight: pw.FontWeight.bold,
-            color: _primaryColor,
-          ),
-        ),
-        pw.Text(
-          'Generated on: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
-          style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
-        ),
-        pw.SizedBox(height: 20),
+        pw.SizedBox(height: 10),
       ],
     );
   }
@@ -75,10 +83,28 @@ class ReportExportService {
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 10),
-      child: pw.Text(
-        'Page ${context.pageNumber} of ${context.pagesCount}',
-        style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+      padding: const pw.EdgeInsets.only(top: 10),
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
       ),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Authorized Business Report', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+          pw.Text(
+            'Page ${context.pageNumber} of ${context.pagesCount}',
+            style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static pw.TableBorder _professionalTableBorder() {
+    return const pw.TableBorder(
+      horizontalInside: pw.BorderSide(color: PdfColors.grey200, width: 1),
+      bottom: pw.BorderSide(color: _primaryColor, width: 1.5),
+      top: pw.BorderSide(color: _primaryColor, width: 1.5),
     );
   }
 
@@ -90,35 +116,39 @@ class ReportExportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        header: (_) => _buildHeader('Member-wise Payment Summary'),
+        header: (_) => _buildHeader('MEMBER PAYMENT SUMMARY'),
         footer: _buildFooter,
         build: (context) => [
+          pw.SizedBox(height: 10),
           pw.TableHelper.fromTextArray(
             headers: [
               'Member Name',
               'Flat No',
-              'Paid Amount (INR)',
-              'Pending Dues (INR)',
+              'Paid Amount (Rs.)',
+              'Pending Dues (Rs.)',
             ],
             data: data
                 .map(
                   (m) => [
                     m['name'],
                     m['flat'],
-                    NumberFormat('#,##,###').format(m['paid']),
-                    NumberFormat('#,##,###').format(m['pending']),
+                    NumberFormat('#,##,###.00').format(m['paid']),
+                    NumberFormat('#,##,###.00').format(m['pending']),
                   ],
                 )
                 .toList(),
             headerStyle: pw.TextStyle(
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold,
+              fontSize: 10,
             ),
+            cellStyle: const pw.TextStyle(fontSize: 10),
             headerDecoration: const pw.BoxDecoration(color: _primaryColor),
-            cellHeight: 30,
+            border: _professionalTableBorder(),
+            cellHeight: 25,
             cellAlignments: {
               0: pw.Alignment.centerLeft,
-              1: pw.Alignment.center,
+              1: pw.Alignment.centerLeft,
               2: pw.Alignment.centerRight,
               3: pw.Alignment.centerRight,
             },
@@ -142,52 +172,59 @@ class ReportExportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        header: (_) => _buildHeader('Society Financial Report'),
+        header: (_) => _buildHeader('SOCIETY FINANCIAL REPORT'),
         footer: _buildFooter,
         build: (context) => [
+          pw.SizedBox(height: 10),
           pw.Text(
-            'Current Fund Balances',
+            'CURRENT FUND BALANCES',
             style: pw.TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: pw.FontWeight.bold,
               color: _primaryColor,
+              letterSpacing: 1.0,
             ),
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 8),
           pw.TableHelper.fromTextArray(
-            headers: ['Fund Name', 'Balance (INR)'],
+            headers: ['Fund Name', 'Balance (Rs.)'],
             data: fundBalances.entries
-                .map((e) => [e.key, NumberFormat('#,##,###').format(e.value)])
+                .map((e) => [e.key, NumberFormat('#,##,###.00').format(e.value)])
                 .toList(),
             headerStyle: pw.TextStyle(
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold,
+              fontSize: 10,
             ),
+            cellStyle: const pw.TextStyle(fontSize: 10),
             headerDecoration: const pw.BoxDecoration(color: _primaryColor),
+            border: _professionalTableBorder(),
+            cellHeight: 25,
             cellAlignments: {
               0: pw.Alignment.centerLeft,
               1: pw.Alignment.centerRight,
             },
           ),
-          pw.SizedBox(height: 30),
+          pw.SizedBox(height: 35),
           pw.Text(
-            'Detailed Expense Log',
+            'DETAILED EXPENSE LOG',
             style: pw.TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: pw.FontWeight.bold,
               color: _primaryColor,
+              letterSpacing: 1.0,
             ),
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 8),
           pw.TableHelper.fromTextArray(
-            headers: ['Date', 'Category', 'Vendor', 'Amount', 'Status'],
+            headers: ['Date', 'Category', 'Vendor', 'Amount (Rs.)', 'Status'],
             data: expenses
                 .map(
                   (e) => [
                     e['date'],
                     e['category'],
                     e['vendor'],
-                    NumberFormat('#,##,###').format(e['amount']),
+                    NumberFormat('#,##,###.00').format(e['amount']),
                     e['status'],
                   ],
                 )
@@ -195,8 +232,12 @@ class ReportExportService {
             headerStyle: pw.TextStyle(
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold,
+              fontSize: 10,
             ),
+            cellStyle: const pw.TextStyle(fontSize: 10),
             headerDecoration: const pw.BoxDecoration(color: _primaryColor),
+            border: _professionalTableBorder(),
+            cellHeight: 25,
             cellAlignments: {
               0: pw.Alignment.centerLeft,
               1: pw.Alignment.centerLeft,
@@ -300,17 +341,27 @@ class ReportExportService {
   static Future<void> generateOverallLedgerPDF(List<UserModel> users) async {
     final pdf = pw.Document();
 
-    // PDF tables struggle to fit 15 columns even in landscape, so we will generate a concise multi-page overall ledger summary.
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.all(30),
-        header: (_) => _buildHeader('Society Outstanding Matrix'),
+        header: (_) => _buildHeader('OVERALL SOCIETY LEDGER'),
         footer: _buildFooter,
         build: (context) {
           return [
+            pw.SizedBox(height: 10),
             pw.TableHelper.fromTextArray(
-              headers: ['Flat', 'Member Name', 'Maintenance', 'Sinking Fund', 'M. Tax', 'Parking', 'Receivable', 'Paid', 'Outstanding'],
+              headers: [
+                'Flat', 
+                'Member Name', 
+                'Maint.(Rs)', 
+                'S.Fund(Rs)', 
+                'Tax(Rs)', 
+                'Park(Rs)', 
+                'Due(Rs)', 
+                'Paid(Rs)', 
+                'Balance(Rs)'
+              ],
               data: users.map((u) => [
                 u.flatNumber,
                 u.name,
@@ -325,12 +376,14 @@ class ReportExportService {
               headerStyle: pw.TextStyle(
                 color: PdfColors.white,
                 fontWeight: pw.FontWeight.bold,
-                fontSize: 9,
+                fontSize: 8,
               ),
               cellStyle: const pw.TextStyle(fontSize: 8),
               headerDecoration: const pw.BoxDecoration(color: _primaryColor),
+              border: _professionalTableBorder(),
+              cellHeight: 22,
               cellAlignments: {
-                0: pw.Alignment.center,
+                0: pw.Alignment.centerLeft,
                 1: pw.Alignment.centerLeft,
                 2: pw.Alignment.centerRight,
                 3: pw.Alignment.centerRight,

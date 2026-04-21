@@ -3,11 +3,13 @@ import '../../features/auth/models/user_model.dart';
 import '../../features/payments/models/transaction_model.dart';
 import '../../features/billing/models/demand_notice_model.dart';
 import '../../features/billing/models/bill_model.dart';
+import '../../features/billing/models/maintenance_receipt_model.dart';
 import '../../features/audit/models/document_model.dart';
 import '../../features/audit/models/expense_model.dart';
 import '../../features/complaints/models/complaint_model.dart';
 import '../services/firestore_service.dart';
 import '../../features/notices/models/notice_model.dart';
+import 'session_manager.dart';
 import 'real_society_data.dart';
 
 class MockData {
@@ -15,15 +17,18 @@ class MockData {
 
   // Use a modifiable list to support CRUD in the mock environment
   static Map<String, double> allocationRatios = {
-    'Maintenance': 0.70,
-    'Sinking Fund': 0.20,
+    'Maintenance': 0.60,
+    'Sinking Fund': 0.15,
     'Repairs Fund': 0.10,
+    'Building Fund': 0.10,
+    'Municipal Tax': 0.05,
   };
 
   static List<UserModel> users = RealSocietyData.users.map((m) => UserModel.fromMap(m)).toList();
   static List<TransactionModel> transactions = [];
   static List<DemandNoticeModel> demandNotices = [];
   static List<BillModel> bills = [];
+  static List<MaintenanceReceiptModel> maintenanceReceipts = [];
   static List<ExpenseModel> expenses = [];
   static List<NoticeModel> notices = [];
 
@@ -91,6 +96,16 @@ class MockData {
       )).toList();
       debugPrint('SYNC: Updated ${notices.length} notices');
     });
+
+    _firestore.getDocuments().listen((updatedDocs) {
+      societyDocuments = updatedDocs.map((d) => DocumentModel.fromMap(d, d['id'] ?? '')).toList();
+      debugPrint('SYNC: Updated ${societyDocuments.length} documents');
+    });
+
+    _firestore.getMaintenanceReceipts().listen((updatedReceipts) {
+      maintenanceReceipts = updatedReceipts.map((r) => MaintenanceReceiptModel.fromMap(r)).toList();
+      debugPrint('SYNC: Updated ${maintenanceReceipts.length} maintenance receipts');
+    });
   }
 
 
@@ -155,12 +170,22 @@ class MockData {
 
   static void addUser(UserModel user) {
     users.add(user);
+    // Persist to Firestore so the user survives app restarts
+    _firestore.createMember(user);
   }
 
   static void updateUser(UserModel updatedUser) {
     final index = users.indexWhere((u) => u.id == updatedUser.id);
     if (index != -1) {
       users[index] = updatedUser;
+      
+      // Sync with session if the updated user is the currently logged-in user
+      if (SessionManager.currentUser?.id == updatedUser.id) {
+        SessionManager.currentUser = updatedUser;
+      }
+
+      // Persist to Firestore
+      _firestore.createMember(updatedUser);
     }
   }
 
@@ -205,6 +230,7 @@ class MockData {
 
   static void addDemandNotice(DemandNoticeModel notice) {
     demandNotices.add(notice);
+    _firestore.createDemandNotice(notice.toMap());
   }
 
   static List<DemandNoticeModel> getDemandNotices() {
@@ -242,14 +268,41 @@ class MockData {
 
   static double getOutstandingAmount(String memberId) {
     // Total Dues from Demand Notices
-    final totalBilled = demandNotices
+    final totalBilledFromNotices = demandNotices
         .where((dn) => _idMatches(dn.memberId, memberId))
         .fold(0.0, (sum, dn) => sum + dn.total);
 
+    // Treat maintenance receipts as bills, but don't double count if there's both a Pending and Paid record
+    final receipts = maintenanceReceipts.where((r) => _idMatches(r.memberId, memberId)).toList();
+    final paidReceipts = receipts.where((r) => r.paymentMode != 'Pending').toList();
+    
+    // Total Billed from receipts = All Paid receipts + Only Pending ones that aren't resolved by a Paid one
+    double totalBilledVal = paidReceipts.fold(0.0, (sum, r) => sum + r.totalAmount);
+    
+    for (var r in receipts.where((r) => r.paymentMode == 'Pending')) {
+      final isResolved = paidReceipts.any((p) => 
+        p.periodFrom.year == r.periodFrom.year && 
+        p.periodFrom.month == r.periodFrom.month &&
+        p.periodTo.year == r.periodTo.year &&
+        p.periodTo.month == r.periodTo.month);
+      if (!isResolved) {
+        totalBilledVal += r.totalAmount;
+      }
+    }
+
+    final totalBilled = totalBilledFromNotices + totalBilledVal;
+
     // Total Paid from Transactions
-    final totalPaid = transactions
+    final totalPaidFromTx = transactions
         .where((t) => _idMatches(t.memberId, memberId))
         .fold(0.0, (sum, t) => sum + t.amount);
+
+    // Receipts that are not 'Pending' count as payments
+    final totalPaidFromReceipts = maintenanceReceipts
+        .where((r) => _idMatches(r.memberId, memberId) && r.paymentMode != 'Pending')
+        .fold(0.0, (sum, r) => sum + r.totalAmount);
+
+    final totalPaid = totalPaidFromTx + totalPaidFromReceipts;
 
     return totalBilled - totalPaid;
   }
@@ -258,6 +311,7 @@ class MockData {
 
   static void addDocument(DocumentModel document) {
     societyDocuments.add(document);
+    _firestore.createDocument(document.toMap());
   }
 
   static List<DocumentModel> getDocuments(UserRole role) {
@@ -282,20 +336,33 @@ class MockData {
   }
 
   static Map<String, double> getFundBalances() {
-    double maintenance = 0, sinking = 0, repairs = 0, water = 0, others = 0;
+    double maintenance = 0, sinking = 0, repairs = 0, building = 0, tax = 0, others = 0;
 
     for (var t in transactions) {
       if (t.allocation.total == 0 && t.amount > 0) {
         // Apply default ratios if no explicit allocation exists
-        maintenance += t.amount * (allocationRatios['Maintenance'] ?? 0.70);
-        sinking += t.amount * (allocationRatios['Sinking Fund'] ?? 0.20);
+        maintenance += t.amount * (allocationRatios['Maintenance'] ?? 0.60);
+        sinking += t.amount * (allocationRatios['Sinking Fund'] ?? 0.15);
         repairs += t.amount * (allocationRatios['Repairs Fund'] ?? 0.10);
+        building += t.amount * (allocationRatios['Building Fund'] ?? 0.10);
+        tax += t.amount * (allocationRatios['Municipal Tax'] ?? 0.05);
       } else {
         maintenance += t.allocation.maintenance;
         sinking += t.allocation.sinkingFund;
         repairs += t.allocation.repairsFund;
-        water += t.allocation.waterCharges;
+        building += t.allocation.buildingFund;
+        tax += t.allocation.municipalTax;
         others += t.allocation.other;
+      }
+    }
+
+    for (var r in maintenanceReceipts) {
+      if (r.paymentMode != 'Pending') {
+        maintenance += r.maintenance;
+        sinking += r.sinkingFund;
+        building += r.buildingFund;
+        tax += r.municipalTax;
+        others += r.noc + r.parkingCharges + r.miscellaneous + r.penaltyAmount;
       }
     }
 
@@ -303,13 +370,155 @@ class MockData {
       'Maintenance': maintenance,
       'Sinking Fund': sinking,
       'Repairs Fund': repairs,
-      'Water Charges': water,
+      'Building Fund': building,
+      'Municipal Tax': tax,
       'Other Charges': others,
+    };
+  }
+
+  static Map<String, double> getMemberContributions(String memberId) {
+    double maintenance = 0, sinking = 0, repairs = 0, building = 0, tax = 0, noc = 0, parking = 0, other = 0, delay = 0, transfer = 0, totalPaid = 0;
+
+    for (var t in transactions.where((t) => _idMatches(t.memberId, memberId))) {
+       totalPaid += t.amount;
+       if (t.allocation.total == 0 && t.amount > 0) {
+         maintenance += t.amount * (allocationRatios['Maintenance'] ?? 0.60);
+         sinking += t.amount * (allocationRatios['Sinking Fund'] ?? 0.15);
+         repairs += t.amount * (allocationRatios['Repairs Fund'] ?? 0.10);
+         building += t.amount * (allocationRatios['Building Fund'] ?? 0.10);
+         tax += t.amount * (allocationRatios['Municipal Tax'] ?? 0.05);
+       } else {
+         maintenance += t.allocation.maintenance;
+         sinking += t.allocation.sinkingFund;
+         repairs += t.allocation.repairsFund;
+         building += t.allocation.buildingFund;
+         tax += t.allocation.municipalTax;
+         other += t.allocation.other;
+       }
+    }
+
+    for (var r in maintenanceReceipts.where((r) => _idMatches(r.memberId, memberId))) {
+      if (r.paymentMode != 'Pending') {
+        totalPaid += r.totalAmount;
+        maintenance += r.maintenance;
+        sinking += r.sinkingFund;
+        building += r.buildingFund;
+        tax += r.municipalTax;
+        noc += r.noc;
+        parking += r.parkingCharges;
+        other += r.miscellaneous;
+        delay += r.penaltyAmount;
+      }
+    }
+
+    return {
+      'Maintenance': maintenance,
+      'Sinking Fund': sinking,
+      'Repairs Fund': repairs,
+      'Building Fund': building,
+      'Municipal Tax': tax,
+      'NOC': noc,
+      'Parking Charges': parking,
+      'Other Charges': other,
+      'Delay Charges': delay,
+      'Room Transfer Fees': transfer,
+      'Total Paid': totalPaid,
     };
   }
 
 
   static void addNotice(NoticeModel notice) {
     notices.insert(0, notice);
+  }
+
+  // --- Maintenance Receipt Methods ---
+
+  static void addMaintenanceReceipt(MaintenanceReceiptModel receipt) {
+    maintenanceReceipts.insert(0, receipt);
+    _firestore.createMaintenanceReceipt(receipt.toMap());
+  }
+
+  static List<MaintenanceReceiptModel> getReceiptsForMember(String memberId) {
+    return maintenanceReceipts
+        .where((r) => _idMatches(r.memberId, memberId))
+        .toList()
+      ..sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
+  }
+
+  static MaintenanceReceiptModel? getLatestReceiptForMember(String memberId) {
+    final receipts = getReceiptsForMember(memberId);
+    return receipts.isNotEmpty ? receipts.first : null;
+  }
+
+  static List<MaintenanceReceiptModel> getUnresolvedPendingReceipts(String memberId) {
+    final receipts = getReceiptsForMember(memberId);
+    final paidReceipts = receipts.where((r) => r.paymentMode != 'Pending').toList();
+
+    return receipts.where((r) {
+      if (r.paymentMode != 'Pending') return false;
+      final isPaid = paidReceipts.any((p) =>
+          p.periodFrom.year == r.periodFrom.year &&
+          p.periodFrom.month == r.periodFrom.month &&
+          p.periodTo.year == r.periodTo.year &&
+          p.periodTo.month == r.periodTo.month);
+      return !isPaid;
+    }).toList();
+  }
+
+  static String getNextMaintenanceReceiptNumber() {
+    return 'MR/25/${(maintenanceReceipts.length + 1).toString().padLeft(4, '0')}';
+  }
+
+  static List<DateTime> getUnpaidMonthsForMember(String memberId) {
+    final now = DateTime.now();
+    final paidMonths = <String>{};
+    final billedMonths = <DateTime>[];
+
+    // Collect paid months from receipts, and add Pending to billed
+    for (final receipt in maintenanceReceipts) {
+      if (_idMatches(receipt.memberId, memberId)) {
+        if (receipt.paymentMode == 'Pending') {
+          billedMonths.add(DateTime(receipt.periodFrom.year, receipt.periodFrom.month, 1));
+        } else {
+          final key = '${receipt.periodFrom.year}-${receipt.periodFrom.month}';
+          paidMonths.add(key);
+        }
+      }
+    }
+
+    // Also check transactions as paid
+    for (final tx in transactions) {
+      if (_idMatches(tx.memberId, memberId)) {
+        final key = '${tx.date.year}-${tx.date.month}';
+        paidMonths.add(key);
+      }
+    }
+
+    // Check demand notices for which months bills were generated
+    for (final dn in demandNotices) {
+      if (_idMatches(dn.memberId, memberId)) {
+        // Parse month name to get actual month
+        final monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        final monthIndex = monthNames.indexOf(dn.month) + 1;
+        if (monthIndex > 0) {
+          billedMonths.add(DateTime(dn.year, monthIndex, 1));
+        }
+      }
+    }
+
+    // Find months that are billed but not paid
+    final unpaid = <DateTime>[];
+    for (final month in billedMonths) {
+      final key = '${month.year}-${month.month}';
+      if (!paidMonths.contains(key) && month.isBefore(now)) {
+        final isDuplicate = unpaid.any((d) => d.year == month.year && d.month == month.month);
+        if (!isDuplicate) {
+          unpaid.add(month);
+        }
+      }
+    }
+
+    return unpaid;
   }
 }

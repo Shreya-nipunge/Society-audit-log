@@ -19,7 +19,8 @@ class PermissionManager {
   static bool canGenerateReports() =>
       isChairman() || isSecretary() || isTreasurer();
 
-  static bool canGenerateBills() => isChairman() || isTreasurer();
+  static bool canGenerateBills() =>
+      isChairman() || isTreasurer() || isSecretary();
 
   static bool canUploadDocs() => isChairman() || isSecretary();
 }

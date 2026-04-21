@@ -6,23 +6,25 @@ class BillingService {
   static void generateMonthlyBills({
     required String month,
     required double maintenance,
-    required double water,
+    required double building,
+    required double tax,
     required double other,
   }) {
     final activeMembers = MockData.getMembers();
     final now = DateTime.now();
 
     for (final member in activeMembers) {
-      final total = maintenance + water + other;
+      final total = maintenance + building + tax + other;
       final bill = BillModel(
         id: 'bill_${now.millisecondsSinceEpoch}_${member.uid}',
         memberId: member.uid,
         flatNumber: member.flatNumber,
-        month: 3, // Hardcoding month to match earlier mock_data for testing. We could parse `month`, but this is a mock.
+        month: 3, 
         monthString: month,
         year: 2026,
         maintenanceAmount: maintenance,
-        waterCharges: water,
+        buildingFund: building,
+        municipalTax: tax,
         otherCharges: other,
         totalAmount: total,
         paidAmount: 0.0,
