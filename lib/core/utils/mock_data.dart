@@ -204,6 +204,21 @@ class MockData {
 
   static void addTransaction(TransactionModel transaction) {
     transactions.add(transaction);
+    
+    // Update the user's ledger fields in real-time
+    final userIndex = users.indexWhere((u) => _idMatches(u.uid, transaction.memberId));
+    if (userIndex != -1) {
+      final user = users[userIndex];
+      users[userIndex] = user.copyWith(
+        maintenanceAmount: user.maintenanceAmount + transaction.allocation.maintenance,
+        sinkingFund: user.sinkingFund + transaction.allocation.sinkingFund,
+        buildingFund: user.buildingFund + transaction.allocation.buildingFund,
+        municipalTax: user.municipalTax + transaction.allocation.municipalTax,
+        variableCharges: user.variableCharges + transaction.allocation.other,
+        totalReceived: user.totalReceived + transaction.amount,
+        closingBalance: user.totalReceivable - (user.totalReceived + transaction.amount),
+      );
+    }
   }
 
   static String getNextReceiptNumber() {
@@ -267,44 +282,8 @@ class MockData {
   }
 
   static double getOutstandingAmount(String memberId) {
-    // Total Dues from Demand Notices
-    final totalBilledFromNotices = demandNotices
-        .where((dn) => _idMatches(dn.memberId, memberId))
-        .fold(0.0, (sum, dn) => sum + dn.total);
-
-    // Treat maintenance receipts as bills, but don't double count if there's both a Pending and Paid record
-    final receipts = maintenanceReceipts.where((r) => _idMatches(r.memberId, memberId)).toList();
-    final paidReceipts = receipts.where((r) => r.paymentMode != 'Pending').toList();
-    
-    // Total Billed from receipts = All Paid receipts + Only Pending ones that aren't resolved by a Paid one
-    double totalBilledVal = paidReceipts.fold(0.0, (sum, r) => sum + r.totalAmount);
-    
-    for (var r in receipts.where((r) => r.paymentMode == 'Pending')) {
-      final isResolved = paidReceipts.any((p) => 
-        p.periodFrom.year == r.periodFrom.year && 
-        p.periodFrom.month == r.periodFrom.month &&
-        p.periodTo.year == r.periodTo.year &&
-        p.periodTo.month == r.periodTo.month);
-      if (!isResolved) {
-        totalBilledVal += r.totalAmount;
-      }
-    }
-
-    final totalBilled = totalBilledFromNotices + totalBilledVal;
-
-    // Total Paid from Transactions
-    final totalPaidFromTx = transactions
-        .where((t) => _idMatches(t.memberId, memberId))
-        .fold(0.0, (sum, t) => sum + t.amount);
-
-    // Receipts that are not 'Pending' count as payments
-    final totalPaidFromReceipts = maintenanceReceipts
-        .where((r) => _idMatches(r.memberId, memberId) && r.paymentMode != 'Pending')
-        .fold(0.0, (sum, r) => sum + r.totalAmount);
-
-    final totalPaid = totalPaidFromTx + totalPaidFromReceipts;
-
-    return totalBilled - totalPaid;
+    final user = users.firstWhere((u) => _idMatches(u.uid, memberId), orElse: () => users.first);
+    return user.closingBalance;
   }
 
   // --- Document Storage Methods ---
@@ -436,6 +415,26 @@ class MockData {
   static void addMaintenanceReceipt(MaintenanceReceiptModel receipt) {
     maintenanceReceipts.insert(0, receipt);
     _firestore.createMaintenanceReceipt(receipt.toMap());
+
+    // Update the user's ledger fields in real-time (As Is Data)
+    if (receipt.paymentMode != 'Pending') {
+      final userIndex = users.indexWhere((u) => _idMatches(u.uid, receipt.memberId));
+      if (userIndex != -1) {
+        final user = users[userIndex];
+        users[userIndex] = user.copyWith(
+          maintenanceAmount: user.maintenanceAmount + receipt.maintenance,
+          sinkingFund: user.sinkingFund + receipt.sinkingFund,
+          municipalTax: user.municipalTax + receipt.municipalTax,
+          noc: user.noc + receipt.noc,
+          parkingCharges: user.parkingCharges + receipt.parkingCharges,
+          delayCharges: user.delayCharges + receipt.penaltyAmount,
+          buildingFund: user.buildingFund + receipt.buildingFund,
+          roomTransferFees: user.roomTransferFees + (receipt.miscellaneous > 1000 ? receipt.miscellaneous : 0), // heuristics for mockup
+          totalReceived: user.totalReceived + receipt.totalAmount,
+          closingBalance: user.totalReceivable - (user.totalReceived + receipt.totalAmount),
+        );
+      }
+    }
   }
 
   static List<MaintenanceReceiptModel> getReceiptsForMember(String memberId) {

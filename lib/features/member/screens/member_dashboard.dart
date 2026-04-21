@@ -232,9 +232,6 @@ class MemberDashboard extends StatelessWidget {
 
   Widget _buildSocietyLedger(UserModel? user) {
     if (user == null) return const SizedBox.shrink();
-    
-    final paidContributions = MockData.getMemberContributions(user.id);
-    final totalOutstanding = MockData.getOutstandingAmount(user.id);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -246,18 +243,19 @@ class MemberDashboard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildLedgerRow('Maintenance', paidContributions['Maintenance']!),
-          _buildLedgerRow('Sinking Fund', paidContributions['Sinking Fund']!),
-          _buildLedgerRow('Municipal Tax', paidContributions['Municipal Tax']!),
-          if ((paidContributions['NOC'] ?? 0) > 0) _buildLedgerRow('NOC', paidContributions['NOC']!),
-          if ((paidContributions['Parking Charges'] ?? 0) > 0) _buildLedgerRow('Parking Charges', paidContributions['Parking Charges']!),
-          if ((paidContributions['Delay Charges'] ?? 0) > 0) _buildLedgerRow('Delay Charges', paidContributions['Delay Charges']!),
-          if ((paidContributions['Building Fund'] ?? 0) > 0) _buildLedgerRow('Building Fund', paidContributions['Building Fund']!),
-          if ((paidContributions['Room Transfer Fees'] ?? 0) > 0) _buildLedgerRow('Room Transfer Fees', paidContributions['Room Transfer Fees']!),
-          if ((paidContributions['Other Charges'] ?? 0) > 0) _buildLedgerRow('Other Charges', paidContributions['Other Charges']!),
+          _buildLedgerRow('Opening Balance', user.openingBalance),
+          _buildLedgerRow('Sinking Fund', user.sinkingFund),
+          _buildLedgerRow('Maintenance Amount', user.maintenanceAmount),
+          _buildLedgerRow('Municipal Tax', user.municipalTax),
+          _buildLedgerRow('NOC', user.noc),
+          _buildLedgerRow('Parking Charges', user.parkingCharges),
+          _buildLedgerRow('Delay Charges', user.delayCharges),
+          _buildLedgerRow('Building Fund', user.buildingFund),
+          _buildLedgerRow('Room Transfer Fees', user.roomTransferFees),
           const Divider(height: 24),
-          _buildLedgerRow('Total Paid Contributions', paidContributions['Total Paid']!, color: AppColors.success),
-          _buildLedgerRow('Total Outstanding Dues', totalOutstanding, isBold: true, color: AppColors.error),
+          _buildLedgerRow('Total Receivable', user.totalReceivable, isBold: true),
+          _buildLedgerRow('Total Received', user.totalReceived, color: AppColors.success, isBold: true),
+          _buildLedgerRow('Closing Balance (Dues)', user.closingBalance, isBold: true, color: AppColors.error),
         ],
       ),
     );
