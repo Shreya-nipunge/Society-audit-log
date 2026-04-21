@@ -20,16 +20,6 @@ class GenerateBillsScreen extends StatefulWidget {
 class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final UserModel _allMembersOption = UserModel(
-    uid: 'ALL',
-    name: 'All Members',
-    email: '',
-    phone: '',
-    password: '',
-    role: UserRole.member,
-    societyId: '',
-  );
-
   // Member selection
   UserModel? _selectedMember;
 
@@ -91,7 +81,7 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
   void _onMemberChanged(UserModel? member) {
     setState(() {
       _selectedMember = member;
-      if (member != null && member.uid != 'ALL') {
+      if (member != null) {
         _ownerNameController.text = member.name;
         _roomNoController.text = member.flatNumber;
         _selectedFloor =
@@ -120,20 +110,6 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
 
         // Calculate penalty
         _calculatePenalty();
-      } else if (member?.uid == 'ALL') {
-        _ownerNameController.clear();
-        _roomNoController.clear();
-        
-        _sinkingFundController.text = '0';
-        _maintenanceController.text = '0';
-        _municipalTaxController.text = '0';
-        _nocController.text = '0';
-        _parkingController.text = '0';
-        _buildingFundController.text = '0';
-        _miscController.text = '0';
-        
-        _penaltyAmount = 0;
-        _lateMonths = 0;
       } else {
         _ownerNameController.clear();
         _roomNoController.clear();
@@ -174,34 +150,16 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
       return;
     }
 
-    final isAllMembers = _selectedMember!.uid == 'ALL';
-
-    // Validate payment mode specific fields only if not ALL
-    if (!isAllMembers) {
-      if (_paymentMode == 'Cheque' && _chequeNoController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter the Cheque Number')),
-        );
-        return;
-      }
-      if (_paymentMode == 'UPI' && _upiIdController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter the UPI ID')),
-        );
-        return;
-      }
-    }
-
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isAllMembers ? 'Assign to All Members?' : 'Generate Maintenance Receipt?'),
+        title: const Text('Generate Maintenance Receipt?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Member: ${_selectedMember!.name}'),
-            if (!isAllMembers) Text('Room: ${_roomNoController.text}'),
+            Text('Room: ${_roomNoController.text}'),
             Text(
               'Period: ${DateFormat('dd MMM yyyy').format(_periodFrom)} - ${DateFormat('dd MMM yyyy').format(_periodTo)}',
             ),
@@ -210,7 +168,7 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
               'Total: ₹${_total.toStringAsFixed(0)}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            if (!isAllMembers && _penaltyAmount > 0)
+            if (_penaltyAmount > 0)
               Text(
                 '(includes ₹${_penaltyAmount.toStringAsFixed(0)} penalty)',
                 style: const TextStyle(color: AppColors.error, fontSize: 13),
@@ -224,7 +182,7 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(isAllMembers ? 'Assign' : 'Generate'),
+            child: const Text('Generate'),
           ),
         ],
       ),
@@ -236,83 +194,41 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
 
     try {
       final admin = SessionManager.currentUser;
-
-      if (isAllMembers) {
-        final allMembers = MockData.getMembers();
-        for (var member in allMembers) {
-          final receiptNo = MockData.getNextMaintenanceReceiptNumber();
-          final receipt = MaintenanceReceiptModel(
-            id: 'mr_${DateTime.now().millisecondsSinceEpoch}_${member.uid}',
-            memberId: member.uid,
-            flatOwnerName: member.name,
-            floor: PenaltyService.getFloorFromFlatNumber(member.flatNumber),
-            roomNo: member.flatNumber,
-            periodFrom: _periodFrom,
-            periodTo: _periodTo,
-            sinkingFund: double.tryParse(_sinkingFundController.text) ?? 0,
-            maintenance: double.tryParse(_maintenanceController.text) ?? 0,
-            municipalTax: double.tryParse(_municipalTaxController.text) ?? 0,
-            noc: double.tryParse(_nocController.text) ?? 0,
-            parkingCharges: double.tryParse(_parkingController.text) ?? 0,
-            miscellaneous: double.tryParse(_miscController.text) ?? 0,
-            buildingFund: double.tryParse(_buildingFundController.text) ?? 0,
-            penaltyAmount: 0,
-            lateMonths: 0,
-            totalAmount: _total,
-            receivedRupeesInWords: _amountInWords,
-            paymentMode: 'Pending', // Setting to pending for mass assign
-            chequeNo: null,
-            drawnOn: null,
-            upiId: null,
-            generatedBy: admin?.name ?? 'Admin',
-            generatedAt: DateTime.now(),
-            receiptNo: receiptNo,
-          );
-          MockData.addMaintenanceReceipt(receipt);
-        }
-      } else {
-        final receiptNo = MockData.getNextMaintenanceReceiptNumber();
-        final receipt = MaintenanceReceiptModel(
-          id: 'mr_${DateTime.now().millisecondsSinceEpoch}',
-          memberId: _selectedMember!.uid,
-          flatOwnerName: _ownerNameController.text,
-          floor: _selectedFloor,
-          roomNo: _roomNoController.text,
-          periodFrom: _periodFrom,
-          periodTo: _periodTo,
-          sinkingFund: double.tryParse(_sinkingFundController.text) ?? 0,
-          maintenance: double.tryParse(_maintenanceController.text) ?? 0,
-          municipalTax: double.tryParse(_municipalTaxController.text) ?? 0,
-          noc: double.tryParse(_nocController.text) ?? 0,
-          parkingCharges: double.tryParse(_parkingController.text) ?? 0,
-          miscellaneous: double.tryParse(_miscController.text) ?? 0,
-          buildingFund: double.tryParse(_buildingFundController.text) ?? 0,
-          penaltyAmount: _penaltyAmount,
-          lateMonths: _lateMonths,
-          totalAmount: _total,
-          receivedRupeesInWords: _amountInWords,
-          paymentMode: _paymentMode,
-          chequeNo:
-              _paymentMode == 'Cheque' ? _chequeNoController.text : null,
-          drawnOn:
-              _paymentMode == 'Cheque' ? _drawnOnController.text : null,
-          upiId: _paymentMode == 'UPI' ? _upiIdController.text : null,
-          generatedBy: admin?.name ?? 'Admin',
-          generatedAt: DateTime.now(),
-          receiptNo: receiptNo,
-        );
-        MockData.addMaintenanceReceipt(receipt);
-      }
+      final receiptNo = MockData.getNextMaintenanceReceiptNumber();
+      final receipt = MaintenanceReceiptModel(
+        id: 'mr_${DateTime.now().millisecondsSinceEpoch}',
+        memberId: _selectedMember!.uid,
+        flatOwnerName: _ownerNameController.text,
+        floor: _selectedFloor,
+        roomNo: _roomNoController.text,
+        periodFrom: _periodFrom,
+        periodTo: _periodTo,
+        sinkingFund: double.tryParse(_sinkingFundController.text) ?? 0,
+        maintenance: double.tryParse(_maintenanceController.text) ?? 0,
+        municipalTax: double.tryParse(_municipalTaxController.text) ?? 0,
+        noc: double.tryParse(_nocController.text) ?? 0,
+        parkingCharges: double.tryParse(_parkingController.text) ?? 0,
+        miscellaneous: double.tryParse(_miscController.text) ?? 0,
+        buildingFund: double.tryParse(_buildingFundController.text) ?? 0,
+        penaltyAmount: _penaltyAmount,
+        lateMonths: _lateMonths,
+        totalAmount: _total,
+        receivedRupeesInWords: _amountInWords,
+        paymentMode: _paymentMode,
+        chequeNo: _paymentMode == 'Cheque' ? _chequeNoController.text : null,
+        drawnOn: _paymentMode == 'Cheque' ? _drawnOnController.text : null,
+        upiId: _paymentMode == 'UPI' ? _upiIdController.text : null,
+        generatedBy: admin?.name ?? 'Admin',
+        generatedAt: DateTime.now(),
+        receiptNo: receiptNo,
+      );
+      MockData.addMaintenanceReceipt(receipt);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isAllMembers 
-              ? 'Maintenance assigned to all members successfully'
-              : 'Receipt generated for ${_selectedMember!.name}',
-          ),
+          content: Text('Receipt generated for ${_selectedMember!.name}'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -329,7 +245,7 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final members = [_allMembersOption, ...MockData.getMembers()];
+    final members = MockData.getMembers();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -363,10 +279,8 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
 
               // --- Member Details ---
               if (_selectedMember != null) ...[
-                if (_selectedMember!.uid != 'ALL') ...[
-                  _buildMemberInfoCard(),
-                  const SizedBox(height: 20),
-                ],
+                _buildMemberInfoCard(),
+                const SizedBox(height: 20),
 
                 // --- Period ---
                 _buildLabel('Period'),
@@ -398,7 +312,7 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
                     Icons.apartment_rounded),
 
                 // --- Penalty (read-only) ---
-                if (_selectedMember!.uid != 'ALL' && _penaltyAmount > 0) ...[
+                if (_penaltyAmount > 0) ...[
                   const SizedBox(height: 12),
                   _buildPenaltyCard(),
                 ],
@@ -409,54 +323,52 @@ class _GenerateBillsScreenState extends State<GenerateBillsScreen> {
                 _buildTotalCard(),
                 const SizedBox(height: 8),
 
-                if (_selectedMember!.uid != 'ALL') ...[
-                  // --- Amount in Words ---
-                  _buildAmountInWordsCard(),
-                  const SizedBox(height: 24),
+                // --- Amount in Words ---
+                _buildAmountInWordsCard(),
+                const SizedBox(height: 24),
 
-                  // --- Payment Mode ---
-                  _buildLabel('Payment Mode'),
-                  const SizedBox(height: 8),
-                  _buildPaymentModeSelector(),
+                // --- Payment Mode ---
+                _buildLabel('Payment Mode'),
+                const SizedBox(height: 8),
+                _buildPaymentModeSelector(),
+                const SizedBox(height: 16),
+
+                // --- Conditional Fields ---
+                if (_paymentMode == 'Cheque') ...[
+                  CustomTextField(
+                    controller: _chequeNoController,
+                    label: 'Cheque No.',
+                    hint: 'Enter cheque number',
+                    prefixIcon: Icons.receipt_rounded,
+                    validator: (v) =>
+                        v!.isEmpty ? 'Required for Cheque payment' : null,
+                  ),
                   const SizedBox(height: 16),
-
-                  // --- Conditional Fields ---
-                  if (_paymentMode == 'Cheque') ...[
-                    CustomTextField(
-                      controller: _chequeNoController,
-                      label: 'Cheque No.',
-                      hint: 'Enter cheque number',
-                      prefixIcon: Icons.receipt_rounded,
-                      validator: (v) =>
-                          v!.isEmpty ? 'Required for Cheque payment' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: _drawnOnController,
-                      label: 'Drawn On',
-                      hint: 'Bank name',
-                      prefixIcon: Icons.account_balance_rounded,
-                    ),
-                  ],
-                  if (_paymentMode == 'UPI') ...[
-                    CustomTextField(
-                      controller: _upiIdController,
-                      label: 'UPI ID',
-                      hint: 'name@upi or phone number',
-                      prefixIcon: Icons.phone_android_rounded,
-                      validator: (v) =>
-                          v!.isEmpty ? 'Required for UPI payment' : null,
-                    ),
-                  ],
+                  CustomTextField(
+                    controller: _drawnOnController,
+                    label: 'Drawn On',
+                    hint: 'Bank name',
+                    prefixIcon: Icons.account_balance_rounded,
+                  ),
+                ],
+                if (_paymentMode == 'UPI') ...[
+                  CustomTextField(
+                    controller: _upiIdController,
+                    label: 'UPI ID',
+                    hint: 'name@upi or phone number',
+                    prefixIcon: Icons.phone_android_rounded,
+                    validator: (v) =>
+                        v!.isEmpty ? 'Required for UPI payment' : null,
+                  ),
                 ],
 
                 const SizedBox(height: 40),
 
                 // --- Generate Button ---
                 CustomButton(
-                  text: _selectedMember!.uid == 'ALL' ? 'Assign to All Members' : 'Generate Maintenance Receipt',
+                  text: 'Generate Maintenance Receipt',
                   isLoading: _isLoading,
-                  icon: _selectedMember!.uid == 'ALL' ? Icons.group_add_rounded : Icons.receipt_long_rounded,
+                  icon: Icons.receipt_long_rounded,
                   onPressed: _handleGenerate,
                 ),
                 const SizedBox(height: 24),

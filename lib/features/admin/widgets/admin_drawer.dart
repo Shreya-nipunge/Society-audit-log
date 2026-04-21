@@ -76,9 +76,9 @@ class AdminDrawer extends StatelessWidget {
           if (PermissionManager.isChairman() || PermissionManager.isSecretary())
             _buildDrawerItem(
               context,
-              'Audit Logs',
-              Icons.security_outlined,
-              '/audit-logs',
+              'Edit Maintenance',
+              Icons.edit_calendar_outlined,
+              '/edit-maintenance',
             ),
           _buildDrawerItem(
             context,

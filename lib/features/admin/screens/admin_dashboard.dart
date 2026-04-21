@@ -194,10 +194,10 @@ class AdminDashboard extends StatelessWidget {
                 ),
                 _buildOpsCard(
                   context,
-                  'Audit Logs',
-                  Icons.security_rounded,
+                  'Edit Maintenance',
+                  Icons.edit_calendar_rounded,
                   const Color(0xFF6366F1),
-                  '/audit-logs',
+                  '/edit-maintenance',
                 ),
               ],
             ),

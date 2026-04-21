@@ -447,10 +447,10 @@ class TreasurerDashboard extends StatelessWidget {
         Expanded(
           child: _buildActionTile(
             context,
-            'Audit\nLogs',
-            Icons.security_rounded,
+            'Edit\nMaintenance',
+            Icons.edit_calendar_rounded,
             const Color(0xFF6366F1),
-            '/audit-logs',
+            '/edit-maintenance',
           ),
         ),
       ],

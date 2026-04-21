@@ -24,7 +24,7 @@ import 'features/admin/screens/chairman_dashboard.dart';
 import 'features/admin/screens/add_member_screen.dart';
 import 'features/admin/screens/member_list_screen.dart';
 import 'features/admin/screens/treasurer_dashboard.dart';
-import 'features/audit/screens/audit_log_screen.dart';
+import 'features/audit/screens/edit_maintenance_screen.dart';
 import 'features/audit/screens/document_list_screen.dart';
 import 'features/payments/screens/record_payment_screen.dart';
 import 'features/notices/screens/notice_detail_screen.dart';
@@ -163,13 +163,13 @@ class SocietyAuditLogApp extends StatelessWidget {
             ],
             child: TreasurerDashboard(),
           ),
-          '/audit-logs': (context) => const RoleGuard(
+          '/edit-maintenance': (context) => const RoleGuard(
             allowedRoles: [
               UserRole.chairman,
               UserRole.secretary,
               UserRole.treasurer,
             ],
-            child: AuditLogScreen(),
+            child: EditMaintenanceScreen(),
           ),
           '/record-payment': (context) => const RoleGuard(
             allowedRoles: [

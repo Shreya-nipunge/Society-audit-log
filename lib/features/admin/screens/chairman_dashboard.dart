@@ -334,11 +334,11 @@ class ChairmanDashboard extends StatelessWidget {
         ),
         _buildGovCard(
           context,
-          'Audit Logs',
-          'View all system actions',
-          Icons.security_rounded,
+          'Edit Maintenance',
+          'View & assign maintenance',
+          Icons.edit_calendar_rounded,
           const Color(0xFF6366F1),
-          '/audit-logs',
+          '/edit-maintenance',
         ),
         _buildGovCard(
           context,
